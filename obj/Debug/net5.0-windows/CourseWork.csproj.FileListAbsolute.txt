@@ -32,3 +32,37 @@ C:\Users\ilyuh\Desktop\Main Projects For Study\CourseWork\obj\Debug\net5.0-windo
 C:\Users\ilyuh\Desktop\Main Projects For Study\CourseWork\obj\Debug\net5.0-windows\CourseWork.pdb
 C:\Users\ilyuh\Desktop\Main Projects For Study\CourseWork\obj\Debug\net5.0-windows\CourseWork.genruntimeconfig.cache
 C:\Users\ilyuh\Desktop\Main Projects For Study\CourseWork\obj\Debug\net5.0-windows\CourseWork.csprojAssemblyReference.cache
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.csprojAssemblyReference.cache
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\MainMenu.g.cs
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\Settings.g.cs
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\WindowMask.g.cs
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\App.g.cs
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork_MarkupCompile.cache
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork_MarkupCompile.lref
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\ref\CourseWork.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.pdb
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\CourseWork.exe
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\CourseWork.deps.json
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\CourseWork.runtimeconfig.json
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\CourseWork.runtimeconfig.dev.json
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\CourseWork.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\ref\CourseWork.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\CourseWork.pdb
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\NAudio.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\NAudio.Asio.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\NAudio.Core.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\NAudio.Midi.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\NAudio.Wasapi.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\NAudio.WinForms.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\bin\Debug\net5.0-windows\NAudio.WinMM.dll
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\MainMenu.baml
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\Settings.baml
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\WindowMask.baml
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.g.resources
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.AssemblyInfoInputs.cache
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.AssemblyInfo.cs
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.csproj.CoreCompileInputs.cache
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.csproj.CopyComplete
+C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.genruntimeconfig.cache

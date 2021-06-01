@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Threading;
 
 namespace CourseWork
 {
@@ -21,8 +22,7 @@ namespace CourseWork
     {
         public WindowMask()
         {
-            InitializeComponent();
-            
+            InitializeComponent();            
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -32,7 +32,7 @@ namespace CourseWork
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-
+            Thread.Sleep(1);
         }
 
         private void Window_KeyUp(object sender, KeyEventArgs e)

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ilyuh\\Desktop\\Main Projects For Study\\CourseWork\\CourseWork.csproj": {}
+    "C:\\Users\\ilyuh\\Desktop\\Main Projects\\CourseWork3\\CourseWork.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ilyuh\\Desktop\\Main Projects For Study\\CourseWork\\CourseWork.csproj": {
+    "C:\\Users\\ilyuh\\Desktop\\Main Projects\\CourseWork3\\CourseWork.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ilyuh\\Desktop\\Main Projects For Study\\CourseWork\\CourseWork.csproj",
+        "projectUniqueName": "C:\\Users\\ilyuh\\Desktop\\Main Projects\\CourseWork3\\CourseWork.csproj",
         "projectName": "CourseWork",
-        "projectPath": "C:\\Users\\ilyuh\\Desktop\\Main Projects For Study\\CourseWork\\CourseWork.csproj",
+        "projectPath": "C:\\Users\\ilyuh\\Desktop\\Main Projects\\CourseWork3\\CourseWork.csproj",
         "packagesPath": "C:\\Users\\ilyuh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ilyuh\\Desktop\\Main Projects For Study\\CourseWork\\obj\\",
+        "outputPath": "C:\\Users\\ilyuh\\Desktop\\Main Projects\\CourseWork3\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\ilyuh\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -59,11 +59,14 @@
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             },
+            "Microsoft.WindowsDesktop.App.WindowsForms": {
+              "privateAssets": "none"
+            },
             "Microsoft.WindowsDesktop.App.WPF": {
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.201\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.103\\RuntimeIdentifierGraph.json"
         }
       }
     }
