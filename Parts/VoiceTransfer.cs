@@ -35,12 +35,13 @@ namespace CourseWork.Parts
             Thread in_thread;
             //сокет для приема (протокол UDP)
             //Socket listeningSocket;
-
-            public SoundTransfer()
+            Manipulator MainControler;
+            public SoundTransfer(Manipulator mainControler)
             {
+                MainControler = mainControler;
                 //создаем поток для записи нашей речи
                 _SoundInput = new WaveIn();
-                MessageBox.Show(_SoundInput.DeviceNumber.ToString());
+                //MessageBox.Show(_SoundInput.DeviceNumber.ToString());
                 //определяем его формат - частота дискретизации 8000 Гц, ширина сэмпла - 16 бит, 1 канал - моно
                 _SoundInput.WaveFormat = new WaveFormat(48000, 24, 1);
                 //добавляем код обработки нашего голоса, поступающего на микрофон
@@ -55,7 +56,7 @@ namespace CourseWork.Parts
                 _ConnectionToSend = new UdpConnection();
 
                 //client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                _Connected = true;
+                _Connected = false;
                 _ConnectionToReceive = new UdpConnection();
                 //listeningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 //создаем поток для прослушивания
@@ -89,21 +90,31 @@ namespace CourseWork.Parts
                 //адрес, с которого пришли данные
                 EndPoint remoteIp = new IPEndPoint(IPAddress.Any, 0);
                 //бесконечный цикл
-                while (_Connected == true)
+                while (true)
                 {
-                    try
+                    //_Connected = MainControler._isSoundConnected;
+                    //_Connected = true;
+                    if (_Connected)
                     {
-                        //промежуточный буфер
-                        //byte[] data = new byte[65535];
-                        //получено данных
-                        IPEndPoint iPEndPoint = null;
-                        byte[] buff = _ConnectionToReceive.Receive(ref iPEndPoint);
-                        //добавляем данные в буфер, откуда output будет воспроизводить звук
-                        _BufferStream.AddSamples(buff, 0, buff.Length);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
+                        //_ConnectionToReceive.Connect("127.0.0.1", 8888);
+
+                        while (_Connected)
+                        {
+                            try
+                            {
+                                //промежуточный буфер
+                                //byte[] data = new byte[65535];
+                                //получено данных
+                                IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                                byte[] buff = _ConnectionToReceive.Receive(ref iPEndPoint);
+                                //добавляем данные в буфер, откуда output будет воспроизводить звук
+                                _BufferStream.AddSamples(buff, 0, buff.Length);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw ex;
+                            }
+                        }
                     }
                 }
             }

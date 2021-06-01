@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CourseWork.Parts
 {
-    class EventTransfer
+    public class EventTransfer
     {
 
     }

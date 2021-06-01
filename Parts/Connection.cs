@@ -53,7 +53,7 @@ namespace CourseWork.Parts
             byte[] buff;
             try
             {
-                iPEndPoint = null;
+                
                 buff = client.Receive(ref iPEndPoint);
 
             }
@@ -84,6 +84,7 @@ namespace CourseWork.Parts
         TcpConnection()
         {
         }
+
         public new NetworkStream Connect(string input = "localhost", int port = 8888)
         {
             TcpClient client = new TcpClient(); ;
@@ -108,7 +109,6 @@ namespace CourseWork.Parts
                 TcpListener server = new TcpListener(localAddr, port);
                 server.Start();
                 client = server.AcceptTcpClient();
-
             }
             catch (Exception ex)
             {

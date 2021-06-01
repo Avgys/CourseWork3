@@ -1,8 +1,20 @@
 {
   "version": 2,
-  "dgSpecHash": "o1LYQ5h3EazENXyNRwpC24sNdajpbRuH1LohEjhn3Db9CGkwxATkqGxfw9ZefSnViOPM97b+xdwW2RM2cP8TIA==",
+  "dgSpecHash": "6+QivqgVgc1u983FannEvX3FPY0VNpoiO+nbpWeEKgIAZqgg9OkKwe4NBATDZI4u+ztXQddjKc/bHj6RakvgNA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\ilyuh\\Desktop\\Main Projects\\CourseWork\\CourseWork.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\ilyuh\\Desktop\\Main Projects For Study\\CourseWork\\CourseWork.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ilyuh\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\naudio\\2.0.0\\naudio.2.0.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\naudio.asio\\2.0.0\\naudio.asio.2.0.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\naudio.core\\2.0.0\\naudio.core.2.0.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\naudio.midi\\2.0.0\\naudio.midi.2.0.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\naudio.wasapi\\2.0.0\\naudio.wasapi.2.0.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\naudio.winforms\\2.0.0\\naudio.winforms.2.0.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\naudio.winmm\\2.0.0\\naudio.winmm.2.0.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\system.security.accesscontrol\\4.7.0\\system.security.accesscontrol.4.7.0.nupkg.sha512",
+    "C:\\Users\\ilyuh\\.nuget\\packages\\system.security.principal.windows\\4.7.0\\system.security.principal.windows.4.7.0.nupkg.sha512"
+  ],
   "logs": []
 }

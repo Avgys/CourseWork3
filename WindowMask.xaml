@@ -1,0 +1,14 @@
+﻿<Window x:Class="CourseWork.WindowMask"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CourseWork"
+        mc:Ignorable="d"
+        Title="WindowMask" WindowStyle="None" ResizeMode="NoResize" 
+        Height="501" Width="887"  AllowsTransparency="True" Background="#02FFFFFF" 
+        WindowState="Maximized" Cursor="None" MouseDown="Window_MouseDown" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp" MouseMove="Window_MouseMove">
+    <Grid>
+
+    </Grid>
+</Window>
