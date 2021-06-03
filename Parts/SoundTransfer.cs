@@ -91,7 +91,7 @@ namespace CourseWork.Parts
                 EndPoint remoteIp = new IPEndPoint(IPAddress.Any, 0);
                 //бесконечный цикл
                 while (true)
-                {
+                {                    
                     //_Connected = MainControler._isSoundConnected;
                     //_Connected = true;
                     if (_Connected)
@@ -116,6 +116,7 @@ namespace CourseWork.Parts
                             }
                         }
                     }
+                    Thread.Sleep(300);
                 }
             }
 

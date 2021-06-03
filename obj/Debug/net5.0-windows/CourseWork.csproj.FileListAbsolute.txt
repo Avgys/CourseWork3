@@ -66,3 +66,4 @@ C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\Course
 C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.csproj.CoreCompileInputs.cache
 C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.csproj.CopyComplete
 C:\Users\ilyuh\Desktop\Main Projects\CourseWork3\obj\Debug\net5.0-windows\CourseWork.genruntimeconfig.cache
+C:\Users\ilyuh\Desktop\Main Projects For Study\CourseWork\bin\Debug\net5.0-windows\Hardcodet.NotifyIcon.Wpf.dll

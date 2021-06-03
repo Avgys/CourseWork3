@@ -27,15 +27,15 @@ namespace CourseWork
     {
         Settings _SettingWindow;
         WindowMask _WindowMask;
-        Manipulator control;
-        
+        Manipulator manipulator;
+
         public MainMenu()
         {
             InitializeComponent();
-            
-            control = new Manipulator();
 
-            control.changeScreen += ChangeWindowToMask;
+            manipulator = new Manipulator();
+
+            //control.changeScreen += ChangeWindowToMask;
 
             _SettingWindow = new Settings();
             //_SettingWindow.Owner = this;
@@ -47,20 +47,36 @@ namespace CourseWork
             //mouse.Clip();
             ////Thread.Sleep(10000);
             //mouse.Unclip();
-            
+            //NotifyIcon icon = new NotifyIcon();
+            //Dispatcher.Invoke(() =>
+            //{
+            //    this.Hide();
+            //    _WindowMask.Show();
+            //});
+
         }
 
         private void ChangeWindowToMask(ScreenEdges flag)
         {
-            Dispatcher.Invoke(() =>
-            {
-                this.Hide();
-                _WindowMask.Show();
-            });
-            
+
+
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            //Screen.p
+            this.Hide();
+            if (_SettingWindow.Owner == null)
+                _SettingWindow.Owner = this;
+            
+            _SettingWindow.Top = this.Top;
+            _SettingWindow.Left = this.Left;
+            _SettingWindow.Width = this.Width;
+            _SettingWindow.Height = this.Height;
+            _SettingWindow.Show();
+        }
+
+        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
 
         }

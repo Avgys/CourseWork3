@@ -5,8 +5,36 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CourseWork"
         mc:Ignorable="d"
-        Title="Settings" Height="450" Width="800">
+        Title="Settings" Height="450" Width="800" Background="#FF363636">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="51.005"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="158"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="MainMenu" HorizontalAlignment="Center" Margin="0,19,0,0" VerticalAlignment="Top" Height="22" Width="138" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="Main menu" Click="MainMenu_Click" Foreground="White"/>
+        <StackPanel>
+            <Button x:Name="Clients" Content="Clients" Height="28" Foreground="White" Background="#FF191919"/>
+        </StackPanel>
+        <Grid x:Name="ClientsGrid" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="203*"/>
+                <ColumnDefinition Width="439*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="101.009"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBox x:Name="IpAddress" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Width="158" Foreground="White" Background="#FF4B4B4B" Height="20"/>
+            <ListBox Background="#FF595959" Grid.ColumnSpan="2" Margin="0,1,0,0" Grid.Row="1"/>
+            <Label Content="Ip Address" HorizontalAlignment="Left" Margin="22,10,0,0" VerticalAlignment="Top" Foreground="White" Height="26" Width="66"/>
+            <Button x:Name="AddClient" Content="Add" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="AddClient_Click" Background="#FF464646" Foreground="White" Height="21" Width="43"/>
+            <Label Content="Port" Margin="37,10,335,66" Grid.Column="1" Foreground="White" Width="Auto"/>
+            <TextBox x:Name="Port" Grid.Column="1" HorizontalAlignment="Left" Margin="37,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="134" Foreground="White" Background="#FF444444" Height="21"/>
+        </Grid>
+
     </Grid>
 </Window>

@@ -23,5 +23,21 @@ namespace CourseWork
         {
             InitializeComponent();
         }
+
+        private void MainMenu_Click(object sender, RoutedEventArgs e)
+        {
+            this.Hide();
+            
+            this.Owner.Top = this.Top;
+            this.Owner.Left = this.Left;
+            this.Owner.Width = this.Width;
+            this.Owner.Height = this.Height;
+            this.Owner.Show();
+        }
+
+        private void AddClient_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

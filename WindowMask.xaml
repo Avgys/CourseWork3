@@ -7,8 +7,6 @@
         mc:Ignorable="d"
         Title="WindowMask" WindowStyle="None" ResizeMode="NoResize" 
         Height="501" Width="887"  AllowsTransparency="True" Background="#02FFFFFF" 
-        WindowState="Maximized" Cursor="None" MouseDown="Window_MouseDown" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp" MouseMove="Window_MouseMove">
-    <Grid>
-
-    </Grid>
+        WindowState="Maximized" Cursor="None" MouseDown="Window_MouseDown" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp" MouseMove="Window_MouseMove" PreviewKeyDown="Window_PreviewKeyDown">
+    <Grid/>
 </Window>

@@ -5,9 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CourseWork"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="387" Width="794" IsVisibleChanged="Window_IsVisibleChanged" Background="#FF323232">
+
     <Grid>
-        <Button Content="Button" HorizontalAlignment="Left" Margin="43,107,0,0" VerticalAlignment="Top" Click="Button_Click"/>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="33.004"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="118"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="Settings" Content="Settings" HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_Click" Height="21" Width="74" Background="#FF515151" Foreground="White" Grid.Row="1"/>
 
     </Grid>
 </Window>

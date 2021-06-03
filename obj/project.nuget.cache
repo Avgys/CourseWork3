@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "6j++arrydXO6q7x81VLSQWe/WDVHX/OzlCpA8xMwE1nhvdDZmTI48F4/Ymfk3+obb0csWfAf5cBzuTCMFBpAVw==",
+  "dgSpecHash": "yWOeTX3+OBYN9fqs/tg0QBjtvSoQW/wL1qNhVbK86EGymzexwtAKk4X2A24pkgKIwr4QWYD2s/yr0xvFc118Cw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\ilyuh\\Desktop\\Main Projects\\CourseWork3\\CourseWork.csproj",
+  "projectFilePath": "C:\\Users\\ilyuh\\Desktop\\Main Projects For Study\\CourseWork\\CourseWork.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\ilyuh\\.nuget\\packages\\hardcodet.notifyicon.wpf\\1.1.0\\hardcodet.notifyicon.wpf.1.1.0.nupkg.sha512",
     "C:\\Users\\ilyuh\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
     "C:\\Users\\ilyuh\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
     "C:\\Users\\ilyuh\\.nuget\\packages\\naudio\\2.0.0\\naudio.2.0.0.nupkg.sha512",
