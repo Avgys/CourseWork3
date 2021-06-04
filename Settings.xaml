@@ -23,7 +23,7 @@
             <Button x:Name="Sound" Content="Sound" Height="28" Foreground="White" Background="#FF191919" Click="Sound_Click"/>
             <Button x:Name="DefalutPorts" Content="Network" Height="28" Foreground="White" Background="#FF191919" Click="DefalutPorts_Click"/>
         </StackPanel>
-        <Grid x:Name="ClientsGrid" Grid.Column="1" Grid.ColumnSpan="3">
+        <Grid x:Name="ClientsGrid" Grid.Column="1" Grid.ColumnSpan="3" d:IsHidden="True">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="203*"/>
                 <ColumnDefinition Width="439*"/>
@@ -49,10 +49,10 @@
             <Button x:Name="SetRecordDevice" Content="Set" HorizontalAlignment="Left" Margin="252,40,0,0" VerticalAlignment="Top" Height="26" Width="69" Click="SetRecordDevice_Click" Foreground="White" Background="#FF464646"/>
             <Button x:Name="SetPlayDevice" Content="Set" HorizontalAlignment="Left" Margin="252,99,0,0" VerticalAlignment="Top" Height="26" Width="69" Click="SetPlayDevice_Click" Foreground="White" Background="#FF464646"/>
         </Grid>
-        <Grid x:Name="NetworkGrid" Grid.Column="1" Grid.ColumnSpan="3" d:IsHidden="True">
+        <Grid x:Name="NetworkGrid" Grid.Column="1" Grid.ColumnSpan="3">
             <Label Content="Tcp Port" HorizontalAlignment="Left" Margin="52,31,0,0" VerticalAlignment="Top" Foreground="White"/>
-            <TextBox x:Name="TCPport" HorizontalAlignment="Left" Margin="52,62,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62" Background="#FF3C3C3C"/>
-            <TextBox x:Name="UDPport" HorizontalAlignment="Left" Margin="52,110,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62" Background="#FF3C3C3C"/>
+            <TextBox x:Name="TCPport" HorizontalAlignment="Left" Margin="52,62,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62" Background="#FF3C3C3C" Foreground="White"/>
+            <TextBox x:Name="UDPport" HorizontalAlignment="Left" Margin="52,110,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="62" Background="#FF3C3C3C" Foreground="White"/>
             <Label Content="Udp Port" HorizontalAlignment="Left" Margin="52,79,0,0" VerticalAlignment="Top" Foreground="White"/>
             <Button x:Name="SetPorts" Content="Set ports" HorizontalAlignment="Left" Margin="52,147,0,0" VerticalAlignment="Top" Width="62" Background="#FF3E3E3E" Foreground="White" Click="SetPorts_Click"/>
         </Grid>

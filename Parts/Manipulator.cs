@@ -98,7 +98,7 @@ namespace CourseWork.Parts
                 }
             }
             _options.Close();
-        }        
+        }
 
         private enum Commands
         {
@@ -123,7 +123,7 @@ namespace CourseWork.Parts
             {
                 foreach (ClientInfo client in _Clients)
                 {
-                     
+
                     byte[] buff = new byte[2048];
                     client.Stream.Read(buff, 0, 2048);
                     string temp = Encoding.Default.GetString(buff);
@@ -177,7 +177,7 @@ namespace CourseWork.Parts
 
         public void TryConnectToClients()
         {
-            while (_options._isTryingConnect)
+            do
             {
                 foreach (var iPEnd in _options.remoteClientsAddress)
                 {
@@ -195,12 +195,12 @@ namespace CourseWork.Parts
                                     tcpInfo = temp
                                 }
                                 );
-
                         }
                     }
                 }
                 Thread.Sleep(500); // choose a number (in milliseconds) that makes sense
-            }
+            } 
+            while (_options._isTryingConnect);
         }
 
         public void LoadSettings()
@@ -236,6 +236,7 @@ namespace CourseWork.Parts
             {
                 _options = new Options();
             }
+            _options.CheckSettings();
             //_options = new Options();
 
         }

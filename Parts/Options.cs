@@ -28,6 +28,7 @@ namespace CourseWork.Parts
 
         public string defaultInputSound { get; set; }
         public string defaultOutputSound { get; set; }
+
         public int defaultSoundPort { get; set; }
         public int defaultEventPort { get; set; }
         public int defaultFilePort { get; set; }
@@ -40,6 +41,7 @@ namespace CourseWork.Parts
 
         string defaultSysInputSound;
         string defaultSysOutputSound;
+
         [JsonIgnore]
         public List<MMDevice> _SoundDevices;
         [JsonIgnore]
@@ -185,6 +187,20 @@ namespace CourseWork.Parts
             {
 
             }
+        }
+
+        public void CheckSettings()
+        {
+            SetSoundParams();
+            foreach(var client in serializableClients)
+            {
+                IPEndPoint ip;
+                if (IPEndPoint.TryParse(client,out ip))
+                {
+                    remoteClientsAddress.Add(ip);
+                }
+            }
+            
         }
     }
 }

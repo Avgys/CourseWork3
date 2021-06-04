@@ -48,7 +48,10 @@ namespace CourseWork
                 ClientsAddresses.Items.Clear();
                 for (int i = 0; i < Manipulator._currManipulator._options.serializableClients.Count; i++)
                 {
-                    ClientsAddresses.Items.Add(Manipulator._currManipulator._options.serializableClients[i]);
+                    bool flag = false;
+                    if (Manipulator._currManipulator.ConnectedRemoteClientsAddress.Contains(Manipulator._currManipulator._options.remoteClientsAddress[i]))
+                        flag = true;
+                    ClientsAddresses.Items.Add(Manipulator._currManipulator._options.serializableClients[i] + " " + flag.ToString());
                 }
             }
         }
