@@ -542,7 +542,7 @@ namespace CourseWork.Parts
                     foreach (var elem in list)
                     {
                         //ConnectedRemoteClientsAddress.RemoveAll(x => x.RemoteClient == elem.tcpInfo.IPEndPoint);
-                        RemoveRemoteTcp(elem.tcpInfo.IPEndPoint)
+                        RemoveRemoteTcp(elem.tcpInfo.IPEndPoint);
                         elem.tcpInfo.Close();
                         _Clients.Remove(elem);
 
