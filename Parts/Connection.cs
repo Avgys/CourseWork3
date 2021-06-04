@@ -163,7 +163,6 @@ namespace CourseWork.Parts
             try
             {
                 _Client.Connect(endPoint);
-
             }
             catch (Exception ex)
             {
@@ -173,18 +172,30 @@ namespace CourseWork.Parts
             return _Client.GetStream();
         }
 
-        async public void ConnectAsync(IPEndPoint endPoint)
+        public NetworkStream ConnectAsync(IPEndPoint endPoint)
         {
             try
             {
-                await Task.Run(() => _Client.Connect(endPoint));
+                var result = _Client.BeginConnect(endPoint.Address, endPoint.Port, null,null);
+
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
+
+                if (!success)
+                {
+                    throw new Exception("Failed to connect.");
+                }
+
+                // we have connected
+                _Client.EndConnect(result);
+                return _Client.GetStream();
             }
             catch (Exception ex)
             {
                 //(ex.Message);
+                return null;
 
             }
-            //return _Client.GetStream();
+            return null;
         }
 
         public bool Pending()

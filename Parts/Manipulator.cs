@@ -12,6 +12,8 @@ namespace CourseWork.Parts
     using System.Net;
     using System.Net.NetworkInformation;
     using System.Threading.Tasks;
+    using NAudio.Wave;
+    using NAudio.CoreAudioApi;
 
     public class Manipulator
     {
@@ -84,12 +86,12 @@ namespace CourseWork.Parts
             //_eventControler = new EventController();
             //_eventControler._changeScreen += ChangeScreen;
 
-            Thread firstCheck = new Thread(new ThreadStart(CheckSubNet));
-            firstCheck.Name = "sendMessages";
-            firstCheck.Start();
+            //firstCheck = new Thread(new ThreadStart(CheckSubNet));
+            //firstCheck.Name = "sendMessages";
+            //firstCheck.Start();
         }
 
-        private async void CheckSubNet()
+        private void CheckSubNet()
         {
 
             Ping pingSender = new Ping();
@@ -107,7 +109,7 @@ namespace CourseWork.Parts
             byte[] buffer = new byte[1024];
             int timeout = 1;
 
-            for (int i = 0; i < 255; i++)
+            for (int i = 0; i < 255 && _options._isTryingConnect; i++)
             {
                 maskBytes[3]++;
                 IPAddress ip = new IPAddress(maskBytes);
@@ -122,7 +124,7 @@ namespace CourseWork.Parts
                         {
                             TcpConnection temp = new TcpConnection();
                             NetworkStream buff = null;
-                            await Task.Run(() => buff = temp.Connect(iPEnd));
+                            buff = temp.ConnectAsync(iPEnd);
                             if (buff != null)
                             {
                                 ConnectedRemoteClientsAddress.Add(iPEnd);
@@ -154,6 +156,8 @@ namespace CourseWork.Parts
             _options._isAcceptable = false;
             _options._isTryingConnect = false;
             _isRecevingMessages = false;
+            _isSendingMessages = false;
+
             _MainListener.Close();
             if (_Clients != null)
             {
@@ -163,6 +167,25 @@ namespace CourseWork.Parts
                     client.tcpInfo.Close();
                 }
             }
+            if (acceptingClients.IsAlive)
+            {
+                acceptingClients.Join();
+            }
+            if (tryToConnect.IsAlive)
+            {
+                tryToConnect.Join();
+            }
+            if (readMessages.IsAlive)
+            {
+                readMessages.Join();
+            }
+            if (sendMessages.IsAlive)
+            {
+                sendMessages.Join();
+            }
+            _sound.Deactivate(DataFlow.Render);
+            _sound.Deactivate(DataFlow.Capture);
+
             _options.Close();
         }
 
@@ -274,9 +297,11 @@ namespace CourseWork.Parts
             }
         }
 
+        private bool _isSendingMessages = true;
+
         private void SendingMessagesMainStream()
         {
-            while (true)
+            while (_isSendingMessages)
             {
                 foreach (ClientInfo client in _Clients)
                 {
@@ -364,6 +389,7 @@ namespace CourseWork.Parts
 
         public void CheckConnectToServers()
         {
+            
             Ping pingSender = new Ping();
             PingOptions options = new PingOptions();
 
@@ -371,6 +397,7 @@ namespace CourseWork.Parts
 
             byte[] buffer = new byte[1024];
             int timeout = 1;
+            bool firstTime = true;
             do
             {
                 lock (remoteClientsAddressInUseLock)
@@ -382,7 +409,7 @@ namespace CourseWork.Parts
                             if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
                             {
                                 TcpConnection temp = new TcpConnection();
-                                NetworkStream buff = temp.Connect(iPEnd);
+                                NetworkStream buff = temp.ConnectAsync(iPEnd);
                                 if (buff != null)
                                 {
                                     ConnectedRemoteClientsAddress.Add(iPEnd);
@@ -403,6 +430,11 @@ namespace CourseWork.Parts
                 {
                     _Clients.Remove(elem);
                     ConnectedRemoteClientsAddress.Remove(elem.tcpInfo.IPEndPoint);
+                }
+                if (firstTime)
+                {
+                    CheckSubNet();
+                    firstTime = false;
                 }
                 Thread.Sleep(500); // choose a number (in milliseconds) that makes sense                
             }

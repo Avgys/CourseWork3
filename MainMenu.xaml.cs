@@ -118,9 +118,12 @@ namespace CourseWork
             {
                 if (window.IsEnabled)
                     window.Close();
+               
             }
+            //System.Windows;
+            //return;
             //System.Windows.MessageBox.Show("Closed");
-            //System.Windows.Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
     }
 }

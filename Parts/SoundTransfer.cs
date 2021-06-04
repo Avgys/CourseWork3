@@ -16,6 +16,8 @@ namespace CourseWork.Parts
     using NAudio.Wave;
     using NAudio.CoreAudioApi;
 
+
+
     class SoundTransfer
     {
         //Подключены ли мы
@@ -69,12 +71,27 @@ namespace CourseWork.Parts
             _Connected = false;
             MainControler = mainControler;
             //создаем поток для прослушивания
-            var enumerator = new MMDeviceEnumerator();
+
             if (mainControler._options.isReceivingSound)
+            {
+                Activate(DataFlow.Render);
+            }
+            if (mainControler._options.isSendingSound)
+            {
+                Activate(DataFlow.Capture);
+            }
+        }
+
+
+
+        public void Activate(DataFlow flow)
+        {
+            var enumerator = new MMDeviceEnumerator();
+            if (flow == DataFlow.Render)
             {
                 var device = enumerator.GetDevice(MainControler._options.defaultOutputSound);
                 _SoundOutput = new WasapiOut(device, AudioClientShareMode.Shared, false, 300);
-                
+
                 //создаем поток для буферного потока и определяем у него такой же формат как и потока с микрофона
                 _BufferStream = new BufferedWaveProvider(new WaveFormat(48000, 32, 2));
                 //привязываем поток входящего звука к буферному потоку
@@ -85,24 +102,36 @@ namespace CourseWork.Parts
                 in_thread.Name = "Listening Sound";
                 in_thread.Start();
             }
-            if (mainControler._options.isSendingSound)
+
+            if (flow == DataFlow.Capture)
             {
                 var device = enumerator.GetDevice(MainControler._options.defaultInputSound);
                 _SoundInput = new WasapiCapture(device);
-                
-                _SoundInput.DataAvailable += Sound_Input;
+
+                _SoundInput.DataAvailable += SoundSend;
                 StartRecord();
             }
         }
 
-        public void Activate()
+        public void Deactivate(DataFlow flow)
         {
+            var enumerator = new MMDeviceEnumerator();
+            if (flow == DataFlow.Render)
+            {
 
-        }
+                MainControler._options.isReceivingSound = false;
+                _SoundOutput.Stop();
 
-        public void Deactivate()
-        {
+                _ConnectionToReceive.Close();
+                if (in_thread.IsAlive)
+                    in_thread.Join();
+            }
 
+            if (flow == DataFlow.Capture)
+            {
+                _SoundInput.StopRecording();
+                _SoundInput.Dispose();
+            }
         }
 
         public void CheckSendConnections(List<IPEndPoint> remoteClients)
@@ -144,15 +173,15 @@ namespace CourseWork.Parts
                 _ConnectionsToSend = new List<UdpConnection>();
                 foreach (var endPoint in remoteClients)
                 {
-                        UdpConnection temp = new UdpConnection();
-                        temp.Connect(endPoint);
-                        _ConnectionsToSend.Add(temp);
+                    UdpConnection temp = new UdpConnection();
+                    temp.Connect(endPoint);
+                    _ConnectionsToSend.Add(temp);
                 }
             }
         }
 
         //Обработка нашего голоса
-        private void Sound_Input(object sender, WaveInEventArgs e)
+        private void SoundSend(object sender, WaveInEventArgs e)
         {
             try
             {
