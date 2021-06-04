@@ -117,7 +117,6 @@ namespace CourseWork.Parts
        public TcpClient _Client;
 
 
-
         public IPEndPoint IPEndPoint
         {
             get

@@ -60,6 +60,8 @@ namespace CourseWork.Parts
 
         static public Manipulator _currManipulator { get; private set; }
 
+
+
         Thread acceptingClients;
         Thread tryToConnect;
         Thread readMessages;
@@ -107,6 +109,16 @@ namespace CourseWork.Parts
             //firstCheck = new Thread(new ThreadStart(CheckSubNet));
             //firstCheck.Name = "sendMessages";
             //firstCheck.Start();
+        }
+
+        private void RemoveRemoteTcp(IPEndPoint e)
+        {
+            foreach (var elem in ConnectedRemoteClientsAddress)
+                if (e == elem.RemoteClient)
+                {
+                    ConnectedRemoteClientsAddress.Remove(elem);
+                }
+            CheckSoundClients();
         }
 
         private void CheckSubNet()
@@ -239,6 +251,14 @@ namespace CourseWork.Parts
                         {
                             endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
                         }
+                        else
+                        {
+                            if ((command & Commands.SET) != 0)
+                            {
+
+                            }
+
+                        }
                         break;
                     }
                 case Commands.EventConnection:
@@ -262,19 +282,18 @@ namespace CourseWork.Parts
             byte[] buff = new byte[2048];
             Array.Clear(buff, 0, buff.Length);
             int bytesLength = 0;
+            bytesLength += 2;
 
             if ((command & Commands.SET) != 0)
                 bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
-
-            bytesLength += 2;
 
             buff.Append<byte>((byte)bytesLength);
 
             buff.Append<byte>((byte)command);
 
-
-            foreach (var bytes in Encoding.UTF8.GetBytes(endPoint))
-                buff.Append<byte>(bytes);
+            if ((command & Commands.SET) != 0)
+                foreach (var bytes in Encoding.UTF8.GetBytes(endPoint))
+                    buff.Append<byte>(bytes);
             try
             {
                 client.Write(buff, 0, bytesLength);
@@ -282,6 +301,7 @@ namespace CourseWork.Parts
             }
             catch
             {
+                RemoveRemoteTcp(client.Socket.RemoteEndPoint as IPEndPoint);
                 client.Close();
                 return false;
             }
@@ -329,30 +349,30 @@ namespace CourseWork.Parts
         private async void ReadMessagesMainStream()
         {
             while (_isRecevingMessages)
-            {                
+            {
                 var list = _Clients.ToList();
-                    foreach (TcpClientInfo client in list)
-                    {
+                foreach (TcpClientInfo client in list)
+                {
 
-                        byte[] buff = new byte[2048];
-                        try
+                    byte[] buff = new byte[2048];
+                    try
+                    {
+                        if (client.Stream.DataAvailable)
                         {
-                            if (client.Stream.DataAvailable)
-                            {
-                                int bytesRead = client.Stream.Read(buff, 0, 2048);
-                                if (bytesRead > 0)
-                                    await Task.Run(() => ProcessCommand(buff, client, bytesRead));
-                            }
+                            int bytesRead = client.Stream.Read(buff, 0, 2048);
+                            if (bytesRead > 0)
+                                await Task.Run(() => ProcessCommand(buff, client, bytesRead));
                         }
-                        catch
-                        {
-                            //client.Stream.Close();
-                            client.tcpInfo.Close();
-                        }
-                        //string temp = Encoding.Default.GetString(buff);
-                        //if (temp != "")
-                        //    MessageBox.Show(temp);
                     }
+                    catch
+                    {
+                        //client.Stream.Close();
+                        client.tcpInfo.Close();
+                    }
+                    //string temp = Encoding.Default.GetString(buff);
+                    //if (temp != "")
+                    //    MessageBox.Show(temp);
+                }
                 Thread.Sleep(100);
             }
         }
@@ -515,12 +535,16 @@ namespace CourseWork.Parts
                     }
 
                 var list = _Clients.FindAll(x => !x.tcpInfo.isClientConnected);
-                lock(ConnectedRemoteLock)
-                foreach (var elem in list)
-                {
-                    _Clients.Remove(elem);
-                    ConnectedRemoteClientsAddress.RemoveAll(x => x.RemoteClient == elem.tcpInfo.IPEndPoint);
-                }
+                lock (ConnectedRemoteLock)
+                    foreach (var elem in list)
+                    {
+                        ConnectedRemoteClientsAddress.RemoveAll(x => x.RemoteClient == elem.tcpInfo.IPEndPoint);
+                        elem.tcpInfo.Close();
+                        _Clients.Remove(elem);
+
+                    }
+
+
                 if (firstTime)
                 {
                     //CheckSubNet();
