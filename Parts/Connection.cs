@@ -27,7 +27,7 @@ namespace CourseWork.Parts
 
         public UdpConnection()
         {
-            client = new UdpClient();
+            client = new UdpClient();            
         }
 
         public IPEndPoint IPEndPoint
@@ -65,9 +65,16 @@ namespace CourseWork.Parts
             }
         }
 
+
         public void Send(byte[] input)
         {
             client.Send(input, input.Length);
+        }
+
+
+        public void Send(byte[] input, IPEndPoint address)
+        {
+            client.Send(input, input.Length, address);
         }
 
         public byte[] Receive(ref IPEndPoint iPEndPoint)

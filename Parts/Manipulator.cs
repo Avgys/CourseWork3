@@ -30,10 +30,17 @@ namespace CourseWork.Parts
         public bool _isSoundConnected { private set; get; }
 
 
-        public List<IPEndPoint> ConnectedRemoteClientsAddress { get; private set; }
-        private List<ClientInfo> _Clients;
+        public List<ConnectionInfo> ConnectedRemoteClientsAddress { get; private set; }
 
-        struct ClientInfo
+        public struct ConnectionInfo
+        {
+            public NetworkStream Stream;
+            public TcpConnection tcpInfo;
+        }
+
+        private List<TcpClientInfo> _Clients;
+
+        struct TcpClientInfo
         {
             public NetworkStream Stream;
             public TcpConnection tcpInfo;
@@ -55,7 +62,7 @@ namespace CourseWork.Parts
             _currManipulator = this;
             SubnetMask = GetSubnetMask();
             ConnectedRemoteClientsAddress = new List<IPEndPoint>();
-            _Clients = new List<ClientInfo>();
+            _Clients = new List<TcpClientInfo>();
             //_Clients[0].tcpInfo.
             LoadSettings();
             //Setting on Accepting external connections
@@ -129,7 +136,7 @@ namespace CourseWork.Parts
                             {
                                 ConnectedRemoteClientsAddress.Add(iPEnd);
                                 _Clients.Add(
-                                    new ClientInfo
+                                    new TcpClientInfo
                                     {
                                         Stream = buff,
                                         tcpInfo = temp
@@ -202,14 +209,8 @@ namespace CourseWork.Parts
 
         private async void SendCommand(Commands command, NetworkStream client)
         {
-            byte[] buff = new byte[2048];
-            Array.Clear(buff, 0, buff.Length);
-            int bytesLength = 0;
-
-            buff.Append<byte>((byte)command);
-            bytesLength++;
             string endPoint = "";
-            switch (command !& Commands.SET !& Commands.UNSET !& Commands.ACCEPT)
+            switch (command! & Commands.SET! & Commands.UNSET! & Commands.ACCEPT)
             {
                 case Commands.MainTCP:
                     {
@@ -240,41 +241,63 @@ namespace CourseWork.Parts
                         break;
                     }
             }
-            
-                if((command & Commands.SET) != 0)
-                bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
-                buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
 
-                client.Write(buff, 0, bytesLength);
-                Array.Clear(buff, 0, buff.Length);
+            byte[] buff = new byte[2048];
+            Array.Clear(buff, 0, buff.Length);
+            int bytesLength = 0;
+
+            if ((command & Commands.SET) != 0)
+                bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
+
+            bytesLength += 2;
+
+            buff.Append<byte>((byte)bytesLength);
+
+            buff.Append<byte>((byte)command);
+            
+
+            foreach (var bytes in Encoding.UTF8.GetBytes(endPoint))
+                buff.Append<byte>(bytes);
+
+            client.Write(buff, 0, bytesLength);
+
+            Array.Clear(buff, 0, buff.Length);
             //client.Stream.Read(buff, 0, buff.Length);
 
         }
 
-        private async void ProcessCommand(byte[] buff, ClientInfo client, int bytesRead)
-            {
-                Commands command = (Commands)buff[0];
+        private async void ProcessCommand(byte[] buff, TcpClientInfo client, int bytesRead)
+        {
+            Commands command = (Commands)buff[1];
 
-                switch (command)
-                {
-                    case Commands.MainTCP:
+            switch (command)
+            {
+                case Commands.MainTCP:
+                    {
+                        break;
+                    }
+                case Commands.SoundConnection:
+                    {
+                        int headerLength = buff[0];
+                        byte[] IpBuff = new byte[bytesRead - 2];
+                        buff.CopyTo(IpBuff, 2);
+                        IPEndPoint iPEnd;
+                        if(IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
                         {
-                            break;
+                            _sound._ClientsAddress.Add(iPEnd);
                         }
-                    case Commands.SoundConnection:
-                        {
-                            break;
-                        }
-                    case Commands.EventConnection:
-                        {
-                            break;
-                        }
-                    case Commands.FileTranferConnection:
-                        {
-                            break;
-                        }
-                }
+                        break;
+                    }
+                case Commands.EventConnection:
+                    {
+                        break;
+                    }
+                case Commands.FileTranferConnection:
+                    {
+                        break;
+                    }
             }
+        }
 
         private bool _isRecevingMessages = true;
 
@@ -282,7 +305,7 @@ namespace CourseWork.Parts
         {
             while (_isRecevingMessages)
             {
-                foreach (ClientInfo client in _Clients)
+                foreach (TcpClientInfo client in _Clients)
                 {
 
                     byte[] buff = new byte[2048];
@@ -303,7 +326,7 @@ namespace CourseWork.Parts
         {
             while (_isSendingMessages)
             {
-                foreach (ClientInfo client in _Clients)
+                foreach (TcpClientInfo client in _Clients)
                 {
                     //string str = "message";
                     Commands command = Commands.SET | Commands.SoundConnection;
@@ -380,7 +403,7 @@ namespace CourseWork.Parts
                 {
                     TcpClient temp = _MainListener.AcceptClient();
                     TcpConnection tcpConnection = new TcpConnection(temp);
-                    _Clients.Add(new ClientInfo
+                    _Clients.Add(new TcpClientInfo
                     {
                         Stream = temp.GetStream(),
                         tcpInfo = tcpConnection
@@ -392,7 +415,7 @@ namespace CourseWork.Parts
 
         public void CheckConnectToServers()
         {
-            
+
             Ping pingSender = new Ping();
             PingOptions options = new PingOptions();
 
@@ -417,7 +440,7 @@ namespace CourseWork.Parts
                                 {
                                     ConnectedRemoteClientsAddress.Add(iPEnd);
                                     _Clients.Add(
-                                        new ClientInfo
+                                        new TcpClientInfo
                                         {
                                             Stream = buff,
                                             tcpInfo = temp

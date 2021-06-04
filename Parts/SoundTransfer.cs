@@ -25,9 +25,11 @@ namespace CourseWork.Parts
         //сокет отправитель
 
         //Socket _client;
-        public List<UdpConnection> _ConnectionsToSend;
+        public List<IPEndPoint> _ClientsAddress;
 
         public UdpConnection _ConnectionToReceive;
+
+        public UdpConnection _ConnectionToSend;
         //поток для входящего звука для отправки
         //WasapiLoopbackCapture _SoundInput;
         WasapiCapture _SoundInput;
@@ -118,13 +120,15 @@ namespace CourseWork.Parts
             var enumerator = new MMDeviceEnumerator();
             if (flow == DataFlow.Render)
             {
-
-                MainControler._options.isReceivingSound = false;
-                _SoundOutput.Stop();
-
-                _ConnectionToReceive.Close();
                 if (in_thread.IsAlive)
-                    in_thread.Join();
+                {
+                    MainControler._options.isReceivingSound = false;
+                    _SoundOutput.Stop();
+
+                    _ConnectionToReceive.Close();
+                    if (in_thread.IsAlive)
+                        in_thread.Join();
+                }
             }
 
             if (flow == DataFlow.Capture)
@@ -137,47 +141,45 @@ namespace CourseWork.Parts
         public void CheckSendConnections(List<IPEndPoint> remoteClients)
         {
 
-            List<IPEndPoint> remoteEndPoints = new List<IPEndPoint>();
-            if (_ConnectionsToSend != null)
-            {
-                foreach (var connection in _ConnectionsToSend)
-                {
-                    if (!remoteClients.Contains(connection.client.Client.RemoteEndPoint as IPEndPoint))
-                    {
-                        connection.Close();
-                        _ConnectionsToSend.Remove(connection);
-                    }
-                    else
-                    {
-                        remoteEndPoints.Add(connection.client.Client.RemoteEndPoint as IPEndPoint);
-                    }
-                }
+            _ClientsAddress = remoteClients;
+            //if (_ClientsAddress != null)
+            //{
 
-                for (int i = 0; i < remoteClients.Count; i++)
-                {
-                    if (remoteEndPoints.Contains(remoteClients[i]))
-                    {
-                        //(remoteClients.RemoveAt(i));
-                        remoteEndPoints.Add(remoteClients[i]);
-                    }
-                    else
-                    {
-                        UdpConnection temp = new UdpConnection();
-                        temp.Connect(remoteClients[i]);
-                        _ConnectionsToSend.Add(temp);
-                    }
-                }
-            }
-            else
-            {
-                _ConnectionsToSend = new List<UdpConnection>();
-                foreach (var endPoint in remoteClients)
-                {
-                    UdpConnection temp = new UdpConnection();
-                    temp.Connect(endPoint);
-                    _ConnectionsToSend.Add(temp);
-                }
-            }
+            //    int s =_ClientsAddress.RemoveAll(x => !remoteClients.Contains(x));
+
+            //    //foreach (var connection in _ConnectionsToSend)
+            //    //{
+            //    //    if (!remoteClients.Contains(connection.client.Client.RemoteEndPoint as IPEndPoint))
+            //    //    {
+            //    //        connection.Close();
+            //    //        _ConnectionsToSend.Remove(connection);
+            //    //    }
+            //    //    else
+            //    //    {
+            //    //        remoteEndPoints.Add(connection.client.Client.RemoteEndPoint as IPEndPoint);
+            //    //    }
+            //    //}
+
+            //    //for (int i = 0; i < remoteClients.Count; i++)
+            //    //{
+            //    //    if (remoteEndPoints.Contains(remoteClients[i]))
+            //    //    {
+            //    //        //(remoteClients.RemoveAt(i));
+            //    //        remoteEndPoints.Add(remoteClients[i]);
+            //    //    }
+            //    //    else
+            //    //    {
+            //    //        UdpConnection temp = new UdpConnection();
+            //    //        temp.Connect(remoteClients[i]);
+            //    //        _ConnectionsToSend.Add(temp);
+            //    //    }
+            //    //}
+            //}
+            //else
+            //{
+
+            //    _ClientsAddress = remoteClients;
+            //}
         }
 
         //Обработка нашего голоса
@@ -186,9 +188,9 @@ namespace CourseWork.Parts
             try
             {
                 //Рассылаем всем подключенным клиентам
-                foreach (var connection in _ConnectionsToSend)
+                foreach (var address in _ClientsAddress)
                 {
-                    connection.Send(e.Buffer);
+                    _ConnectionToSend.Send(e.Buffer, address);
                 }
 
             }
@@ -208,7 +210,7 @@ namespace CourseWork.Parts
             //бесконечный цикл
             while (MainControler._options.isReceivingSound)
             {
-                CheckSendConnections(MainControler.ConnectedRemoteClientsAddress);
+                //CheckSendConnections(MainControler.ConnectedRemoteClientsAddress);
                 _Connected = MainControler._isSoundConnected;
                 //_Connected = true;
                 if (_Connected)
