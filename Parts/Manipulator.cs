@@ -115,7 +115,8 @@ namespace CourseWork.Parts
         {
             lock (ConnectedRemoteLock)
             {
-                foreach (var elem in ConnectedRemoteClientsAddress)
+                var list = ConnectedRemoteClientsAddress.ToList();
+                foreach (var elem in lists)
                     if (e == elem.RemoteClient)
                     {
                         ConnectedRemoteClientsAddress.Remove(elem);
