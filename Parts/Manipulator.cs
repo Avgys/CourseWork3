@@ -11,6 +11,7 @@ namespace CourseWork.Parts
     using System.Text.Json;
     using System.Net.Sockets;
     using System.Net;
+    using System.Net.NetworkInformation;
 
     public class Manipulator
     {
@@ -42,18 +43,21 @@ namespace CourseWork.Parts
         Thread readMessages;
         Thread sendMessages;
 
+        IPAddress SubnetMask;
+        IPAddress localIP;
+
         public Manipulator()
         {
             _PCid = 1;
             _currManipulator = this;
-
+            SubnetMask = GetSubnetMask();
             ConnectedRemoteClientsAddress = new List<IPEndPoint>();
             _Clients = new List<ClientInfo>();
             LoadSettings();
             //Setting on Accepting external connections
 
             _MainListener = new TcpConnection();
-            _MainListener.Listen("127.0.0.1", _options.defualtTcpPort);
+            _MainListener.Listen(new IPEndPoint(localIP, _options.defualtTcpPort));
 
             acceptingClients = new Thread(new ThreadStart(AcceptingClients));
             acceptingClients.Name = "Waiting TcpConnect";
@@ -150,7 +154,35 @@ namespace CourseWork.Parts
             //}
         }
 
+        public IPAddress GetSubnetMask()
+        {
+            //var adapters = NetworkInterface.GetAllNetworkInterfaces();
+            //foreach (NetworkInterface adapter in adapters)
+            //{
+            //    Console.WriteLine(adapter.Description + " :");
+            //    var properties = adapter.GetIPProperties();
+            //    foreach (var dns in properties.GetIPv4Properties    )
+            //        Console.WriteLine(dns.ToString());
+            //}
 
+            IPAddress[] addresses;
+            addresses = Dns.GetHostAddresses(Dns.GetHostName()).Where(ha => ha.AddressFamily == AddressFamily.InterNetwork).ToArray();
+            localIP = addresses[0];
+            foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                foreach (UnicastIPAddressInformation unicastIPAddressInformation in adapter.GetIPProperties().UnicastAddresses)
+                {
+                    if (unicastIPAddressInformation.Address.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        if (localIP.Equals(unicastIPAddressInformation.Address))
+                        {
+                            return unicastIPAddressInformation.IPv4Mask;
+                        }
+                    }
+                }
+            }
+            throw new ArgumentException(string.Format("Can't find subnetmask for IP address '{0}'", localIP));
+        }
 
         private void AcceptingClients()
         {
