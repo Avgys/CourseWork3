@@ -15,6 +15,23 @@ namespace CourseWork.Parts
     using NAudio.Wave;
     using NAudio.CoreAudioApi;
 
+    public class ConnectionInfo
+    {
+        public IPEndPoint Sound;
+        public IPEndPoint Event;
+        public IPEndPoint File;
+        public IPEndPoint RemoteClient;
+
+        public ConnectionInfo(IPEndPoint client = null, IPEndPoint sound = null, IPEndPoint eventValue = null, IPEndPoint file = null)
+        {
+            
+            Sound = sound;
+            Event = eventValue;
+            File = file;
+            RemoteClient = client;
+        }
+    }
+
     public class Manipulator
     {
         public static object remoteClientsAddressInUseLock = new object();
@@ -32,11 +49,7 @@ namespace CourseWork.Parts
 
         public List<ConnectionInfo> ConnectedRemoteClientsAddress { get; private set; }
 
-        public struct ConnectionInfo
-        {
-            public NetworkStream Stream;
-            public TcpConnection tcpInfo;
-        }
+        
 
         private List<TcpClientInfo> _Clients;
 
@@ -61,7 +74,7 @@ namespace CourseWork.Parts
             _PCid = 1;
             _currManipulator = this;
             SubnetMask = GetSubnetMask();
-            ConnectedRemoteClientsAddress = new List<IPEndPoint>();
+            ConnectedRemoteClientsAddress = new List<ConnectionInfo>();
             _Clients = new List<TcpClientInfo>();
             //_Clients[0].tcpInfo.
             LoadSettings();
@@ -127,14 +140,15 @@ namespace CourseWork.Parts
                     if (ip.ToString() != localIP.ToString())
                     {
                         IPEndPoint iPEnd = new IPEndPoint(ip, _options.defualtTcpPort);
-                        if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
-                        {
+                        //if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
+                        if (ConnectedRemoteClientsAddress.Find(x => x.RemoteClient == iPEnd) == null)
+                        {                            
                             TcpConnection temp = new TcpConnection();
                             NetworkStream buff = null;
                             buff = temp.ConnectAsync(iPEnd);
                             if (buff != null)
                             {
-                                ConnectedRemoteClientsAddress.Add(iPEnd);
+                                ConnectedRemoteClientsAddress.Add(new ConnectionInfo(iPEnd));
                                 _Clients.Add(
                                     new TcpClientInfo
                                     {
@@ -408,7 +422,7 @@ namespace CourseWork.Parts
                         Stream = temp.GetStream(),
                         tcpInfo = tcpConnection
                     });
-                    ConnectedRemoteClientsAddress.Add(temp.Client.RemoteEndPoint as IPEndPoint);
+                    ConnectedRemoteClientsAddress.Add(new (temp.Client.RemoteEndPoint as IPEndPoint));
                 }
             }
         }
@@ -432,13 +446,14 @@ namespace CourseWork.Parts
                         PingReply reply = pingSender.Send(iPEnd.Address, timeout, buffer, options);
                         if (reply.Status == IPStatus.Success)
                         {
-                            if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
+                            if (ConnectedRemoteClientsAddress.Find(x => x.RemoteClient == iPEnd) == null)
                             {
                                 TcpConnection temp = new TcpConnection();
-                                NetworkStream buff = temp.ConnectAsync(iPEnd);
+                                NetworkStream buff = null;
+                                buff = temp.ConnectAsync(iPEnd);
                                 if (buff != null)
                                 {
-                                    ConnectedRemoteClientsAddress.Add(iPEnd);
+                                    ConnectedRemoteClientsAddress.Add(new (iPEnd));
                                     _Clients.Add(
                                         new TcpClientInfo
                                         {
@@ -448,6 +463,22 @@ namespace CourseWork.Parts
                                         );
                                 }
                             }
+                            //if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
+                            //{
+                            //    TcpConnection temp = new TcpConnection();
+                            //    NetworkStream buff = temp.ConnectAsync(iPEnd);
+                            //    if (buff != null)
+                            //    {
+                            //        ConnectedRemoteClientsAddress.Add(iPEnd);
+                            //        _Clients.Add(
+                            //            new TcpClientInfo
+                            //            {
+                            //                Stream = buff,
+                            //                tcpInfo = temp
+                            //            }
+                            //            );
+                            //    }
+                            //}
                         }
                     }
 
@@ -455,7 +486,7 @@ namespace CourseWork.Parts
                 foreach (var elem in list)
                 {
                     _Clients.Remove(elem);
-                    ConnectedRemoteClientsAddress.Remove(elem.tcpInfo.IPEndPoint);
+                    ConnectedRemoteClientsAddress.RemoveAll(x => x.RemoteClient == elem.tcpInfo.IPEndPoint);
                 }
                 if (firstTime)
                 {
