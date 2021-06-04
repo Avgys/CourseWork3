@@ -295,8 +295,8 @@ namespace CourseWork.Parts
         private async void ProcessCommand(byte[] buff, TcpClientInfo client, int bytesRead)
         {
             Commands command = (Commands)buff[1];
-
-            switch (command)
+            Commands neutral = (Commands)188;
+            switch (command & neutral)
             {
                 case Commands.MainTCP:
                     {
