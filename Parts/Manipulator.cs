@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-
 namespace CourseWork.Parts
 {
     using System.Windows.Forms;
@@ -16,6 +15,7 @@ namespace CourseWork.Parts
 
     public class Manipulator
     {
+        public static object remoteClientsAddressInUseLock = new  object();
         int _PCid;
         public Options _options;
         SoundTransfer _sound;
@@ -54,6 +54,7 @@ namespace CourseWork.Parts
             SubnetMask = GetSubnetMask();
             ConnectedRemoteClientsAddress = new List<IPEndPoint>();
             _Clients = new List<ClientInfo>();
+            //_Clients[0].tcpInfo.
             LoadSettings();
             //Setting on Accepting external connections
 
@@ -64,8 +65,8 @@ namespace CourseWork.Parts
             acceptingClients.Name = "Waiting TcpConnect";
             acceptingClients.Start();
 
-            tryToConnect = new Thread(new ThreadStart(TryConnectToClients));
-            tryToConnect.Name = "TryingToConnect";
+            tryToConnect = new Thread(new ThreadStart(CheckConnectToServers));
+            tryToConnect.Name = "CheckConnectToServers";
             tryToConnect.Start();
 
             readMessages = new Thread(new ThreadStart(ReadMessagesMainStream));
@@ -76,12 +77,16 @@ namespace CourseWork.Parts
             sendMessages.Name = "sendMessages";
             sendMessages.Start();
 
+            
+
             _sound = new SoundTransfer(this);
             //_fileTransfer = new FileTransfer();
             //_eventControler = new EventController();
             //_eventControler._changeScreen += ChangeScreen;
 
-            CheckSubNet();
+            Thread firstCheck = new Thread(new ThreadStart(CheckSubNet));
+            firstCheck.Name = "sendMessages";
+            firstCheck.Start();
         }
 
         private async void CheckSubNet()
@@ -117,7 +122,7 @@ namespace CourseWork.Parts
                         {
                             TcpConnection temp = new TcpConnection();
                             NetworkStream buff = null;
-                            await Task.Run(() => buff = temp.Connect(iPEnd));                            
+                            await Task.Run(() => buff = temp.Connect(iPEnd));
                             if (buff != null)
                             {
                                 ConnectedRemoteClientsAddress.Add(iPEnd);
@@ -171,7 +176,12 @@ namespace CourseWork.Parts
             FileTranferConnection = 0x20
         }
 
-        private void ProcessCommand(Commands e)
+        private void SendCommand(Commands e, NetworkStream stream)
+        {
+            
+        }
+
+        private void ProcessCommand(Commands e, NetworkStream stream)
         {
 
         }
@@ -197,18 +207,20 @@ namespace CourseWork.Parts
 
         private void SendingMessagesMainStream()
         {
-            //while (true)
-            //{
-            //    //foreach (ClientInfo client in _Clients)
-            //    //{
-            //    //    string str = "message";
-            //    //    byte[] buff = new byte[2048];
-            //    //    //buff = Encoding.Default.GetBytes(str);
-            //    //    buff = Encoding.Default.GetBytes(str);
-            //    //    client.Stream.Write(buff, 0, buff.Length);
-            //    //}
-            //    Thread.Sleep(100);
-            //}
+            while (true)
+            {
+                foreach (ClientInfo client in _Clients)
+                {
+                    string str = "message";
+                    Commands command = Commands.SET | Commands.SoundConnection;
+                    byte[] buff = new byte[2048];
+                    buff[0] = (byte)command;
+                    buff = Encoding.Default.GetBytes(str);
+                    
+                    client.Stream.Write(buff, 0, buff.Length);
+                }
+                Thread.Sleep(100);
+            }
         }
 
         public IPAddress GetSubnetMask()
@@ -264,30 +276,49 @@ namespace CourseWork.Parts
             }
         }
 
-        public void TryConnectToClients()
+        public void CheckConnectToServers()
         {
+            Ping pingSender = new Ping();
+            PingOptions options = new PingOptions();
+
+            options.DontFragment = true;
+
+            byte[] buffer = new byte[1024];
+            int timeout = 1;
             do
             {
-                foreach (var iPEnd in _options.remoteClientsAddress)
-                {
-                    if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
+                lock (remoteClientsAddressInUseLock)
+                    foreach (var iPEnd in _options.remoteClientsAddress)
                     {
-                        TcpConnection temp = new TcpConnection();
-                        NetworkStream buff = temp.Connect(iPEnd);
-                        if (buff != null)
+                        PingReply reply = pingSender.Send(iPEnd.Address, timeout, buffer, options);
+                        if (reply.Status == IPStatus.Success)
                         {
-                            ConnectedRemoteClientsAddress.Add(iPEnd);
-                            _Clients.Add(
-                                new ClientInfo
+                            if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
+                            {
+                                TcpConnection temp = new TcpConnection();
+                                NetworkStream buff = temp.Connect(iPEnd);
+                                if (buff != null)
                                 {
-                                    Stream = buff,
-                                    tcpInfo = temp
+                                    ConnectedRemoteClientsAddress.Add(iPEnd);
+                                    _Clients.Add(
+                                        new ClientInfo
+                                        {
+                                            Stream = buff,
+                                            tcpInfo = temp
+                                        }
+                                        );
                                 }
-                                );
+                            }
                         }
                     }
+
+                var list = _Clients.FindAll(x => !x.tcpInfo.isClientConnected);
+                foreach(var elem in list)
+                {
+                    _Clients.Remove(elem);
+                    ConnectedRemoteClientsAddress.Remove(elem.tcpInfo.IPEndPoint);
                 }
-                Thread.Sleep(500); // choose a number (in milliseconds) that makes sense
+                Thread.Sleep(500); // choose a number (in milliseconds) that makes sense                
             }
             while (_options._isTryingConnect);
         }

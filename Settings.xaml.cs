@@ -109,12 +109,11 @@ namespace CourseWork
         {
             IPEndPoint temp;
             //e.AddedItems;
-            if (e.AddedItems.Count >= 1)
-                if (IPEndPoint.TryParse(e.AddedItems[0].ToString(), out temp))
-                {
-                    IpAddress.Text = temp.Address.ToString();
-                    Port.Text = temp.Port.ToString();
-                }
+
+            if (e.AddedItems.Count >= 1) {
+                IpAddress.Text = Manipulator._currManipulator._options.remoteClientsAddress[ClientsAddresses.SelectedIndex].Address.ToString();
+                Port.Text = Manipulator._currManipulator._options.remoteClientsAddress[ClientsAddresses.SelectedIndex].Port.ToString();
+            }   
         }
 
         private void Clients_Click(object sender, RoutedEventArgs e)
@@ -140,6 +139,7 @@ namespace CourseWork
                         RecordDevice.SelectedItem = options._SoundDevices[i].FriendlyName;
                     }
                 }
+
                 PlayDevice.Items.Clear();
                 for (int i = 0; i < options._SoundDevices.Count; i++)
                 {
@@ -150,6 +150,10 @@ namespace CourseWork
                         PlayDevice.SelectedItem = options._SoundDevices[i].FriendlyName;
                     }
                 }
+
+                SendSound.IsChecked = Manipulator._currManipulator._options.isSendingSound;
+                ReceiveSound.IsChecked = Manipulator._currManipulator._options.isReceivingSound;
+                 
             }
         }
 
@@ -207,8 +211,28 @@ namespace CourseWork
         {
             var options = Manipulator._currManipulator._options;
             if (options.isContainsClient(IpAddress.Text, Port.Text))
-                options.RemoveClient(IpAddress.Text, Port.Text);
+               options.RemoveClient(IpAddress.Text, Port.Text);
             ResetClientGrid();
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            Manipulator._currManipulator._options.isReceivingSound = true;
+        }
+
+        private void ReceiveSound_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Manipulator._currManipulator._options.isReceivingSound = false;
+        }
+
+        private void SendSound_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Manipulator._currManipulator._options.isSendingSound = false;
+        }
+
+        private void SendSound_Checked(object sender, RoutedEventArgs e)
+        {
+            Manipulator._currManipulator._options.isSendingSound = true;
         }
     }
 }

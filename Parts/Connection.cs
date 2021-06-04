@@ -100,10 +100,28 @@ namespace CourseWork.Parts
     public class TcpConnection
     {
         TcpClient _Client;
+
+
+
+        public IPEndPoint IPEndPoint
+        {
+            get
+            {
+                return _Client.Client.RemoteEndPoint as IPEndPoint;
+            }
+        }
+        public bool isClientConnected
+        {
+            get
+            {
+                return _Client.Connected;
+            }
+        }
         TcpListener _Server;
         public TcpConnection()
         {
             _Client = new TcpClient();
+
         }
 
         public TcpConnection(TcpClient e)
@@ -137,7 +155,7 @@ namespace CourseWork.Parts
             try
             {
                 _Client.Connect(endPoint);
-                
+
             }
             catch (Exception ex)
             {
@@ -147,16 +165,16 @@ namespace CourseWork.Parts
             return _Client.GetStream();
         }
 
-       async public void ConnectAsync(IPEndPoint endPoint)
+        async public void ConnectAsync(IPEndPoint endPoint)
         {
             try
             {
-               await Task.Run(()=> _Client.Connect(endPoint));
+                await Task.Run(() => _Client.Connect(endPoint));
             }
             catch (Exception ex)
             {
                 //(ex.Message);
-                
+
             }
             //return _Client.GetStream();
         }
@@ -173,9 +191,9 @@ namespace CourseWork.Parts
                 TcpClient Client;
                 try
                 {
-                    
+
                     Client = _Server.AcceptTcpClient();
-                    
+
                 }
                 catch (Exception ex)
                 {

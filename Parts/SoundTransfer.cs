@@ -91,13 +91,7 @@ namespace CourseWork.Parts
             {
                 var device = enumerator.GetDevice(MainControler._options.defaultInputSound);
                 _SoundInput = new WasapiCapture(device);
-
-                //создаем поток для записи нашей речи
-                //_SoundInput = new WaveIn();
-
-                //определяем его формат - частота дискретизации 8000 Гц, ширина сэмпла - 16 бит, 1 канал - моно
-                //_SoundInput.WaveFormat = new WaveFormat(48000, 24, 2);
-                //добавляем код обработки нашего голоса, поступающего на микрофон
+                
                 _SoundInput.DataAvailable += Sound_Input;
                 StartRecord();
             }

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <None Remove="cursor.ico" />
+    <None Remove="Settings.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
 
   <ItemGroup>
     <Resource Include="cursor.ico" />
+    <Resource Include="Settings.json" />
   </ItemGroup>
 
 </Project>

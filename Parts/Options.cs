@@ -45,13 +45,38 @@ namespace CourseWork.Parts
         [JsonIgnore]
         public List<MMDevice> _SoundDevices;
         [JsonIgnore]
-        public List<IPEndPoint> remoteClientsAddress { get; private set; }
+        public List<IPEndPoint> remoteClientsAddress { get; set; }
 
         public List<string> serializableClients { get; set; }
+
+        [JsonInclude]
+        public bool ISReceivingSound;
         [JsonIgnore]
-        public bool isReceivingSound { get; private set; }
+        public bool isReceivingSound
+        {
+            get
+            {
+                return ISReceivingSound;
+            }
+            set
+            {
+                ISReceivingSound = value;
+            }
+        }
+        [JsonInclude]
+        public bool ISSendingSound;
         [JsonIgnore]
-        public bool isSendingSound { get; private set; }
+        public bool isSendingSound
+        {
+            get
+            {
+                return ISSendingSound;
+            }
+            set
+            {
+                ISSendingSound = value;
+            }
+        }
 
 
         //public struct clientInfo
@@ -151,7 +176,8 @@ namespace CourseWork.Parts
                 IPAddress localAddr = IPAddress.Parse(ip_);
 
                 IPEndPoint iPEndPoint = new IPEndPoint(localAddr, Int32.Parse(port_));
-                remoteClientsAddress.Add(iPEndPoint);
+                lock (Manipulator.remoteClientsAddressInUseLock)
+                    remoteClientsAddress.Add(iPEndPoint);
                 serializableClients.Add(iPEndPoint.ToString());
             }
             catch (Exception ex)
@@ -175,8 +201,11 @@ namespace CourseWork.Parts
                 IPEndPoint iPEndPoint = new IPEndPoint(localAddr, Int32.Parse(port_));
                 if (remoteClientsAddress.Contains(iPEndPoint))
                 {
-                    remoteClientsAddress.Remove(iPEndPoint);
-                    serializableClients.Remove(iPEndPoint.ToString());
+                    lock (Manipulator.remoteClientsAddressInUseLock)
+                    {
+                        remoteClientsAddress.Remove(iPEndPoint);
+                        serializableClients.Remove(iPEndPoint.ToString());
+                    }
                 }
             }
             catch (Exception ex)
@@ -197,7 +226,8 @@ namespace CourseWork.Parts
                 IPEndPoint ip;
                 if (IPEndPoint.TryParse(client,out ip))
                 {
-                    remoteClientsAddress.Add(ip);
+                    lock (Manipulator.remoteClientsAddressInUseLock)
+                        remoteClientsAddress.Add(ip);
                 }
             }
             
