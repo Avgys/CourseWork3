@@ -221,7 +221,7 @@ namespace CourseWork.Parts
             ACCEPT = 0x40
         }
 
-        private async void SendCommand(Commands command, NetworkStream client)
+        private bool SendCommand(Commands command, NetworkStream client)
         {
             string endPoint = "";
             switch (command! & Commands.SET! & Commands.UNSET! & Commands.ACCEPT)
@@ -272,8 +272,16 @@ namespace CourseWork.Parts
 
             foreach (var bytes in Encoding.UTF8.GetBytes(endPoint))
                 buff.Append<byte>(bytes);
-
-            client.Write(buff, 0, bytesLength);
+            try
+            { 
+                client.Write(buff, 0, bytesLength);
+                return true;
+            }
+            catch
+            {
+                client.Close();
+                return false;
+            }
 
             Array.Clear(buff, 0, buff.Length);
             //client.Stream.Read(buff, 0, buff.Length);
@@ -355,7 +363,10 @@ namespace CourseWork.Parts
                 {
                     //string str = "message";
                     Commands command = Commands.SET | Commands.SoundConnection;
-                    SendCommand(command, client.Stream);
+                    if(!SendCommand(command, client.Stream))
+                    {
+                        client.tcpInfo.Close();
+                    }
 
 
                     //byte[] buff = new byte[2048];
