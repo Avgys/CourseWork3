@@ -27,7 +27,7 @@ namespace CourseWork.Parts
 
         public UdpConnection()
         {
-            client = new UdpClient();            
+            client = new UdpClient(0);            
         }
 
         public IPEndPoint IPEndPoint
@@ -185,7 +185,7 @@ namespace CourseWork.Parts
             {
                 var result = _Client.BeginConnect(endPoint.Address, endPoint.Port, null,null);
 
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(5));
 
                 if (!success)
                 {

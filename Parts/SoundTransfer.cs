@@ -69,7 +69,7 @@ namespace CourseWork.Parts
         }
 
         public SoundTransfer(Manipulator mainControler)
-        {
+        {            
             _Connected = false;
             MainControler = mainControler;
             //создаем поток для прослушивания
@@ -88,6 +88,7 @@ namespace CourseWork.Parts
 
         public void Activate(DataFlow flow)
         {
+            
             var enumerator = new MMDeviceEnumerator();
             if (flow == DataFlow.Render)
             {
@@ -99,6 +100,7 @@ namespace CourseWork.Parts
                 //привязываем поток входящего звука к буферному потоку
                 _SoundOutput.Init(_BufferStream);
                 _ConnectionToReceive = new UdpConnection();
+                
                 in_thread = new Thread(new ThreadStart(Listening));
                 //запускаем его
                 in_thread.Name = "Listening Sound";
