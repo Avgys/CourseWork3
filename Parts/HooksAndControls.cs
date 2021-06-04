@@ -27,7 +27,7 @@ namespace CourseWork.Parts
     //    public EventCatcher()
     //    {
 
-            
+
 
 
 
@@ -72,12 +72,19 @@ namespace CourseWork.Parts
 
         static object InputQueuelocker = new object();
 
+        static public bool _isCheckingInput { get; set; }
+
         static public void Start()
         {
 
             _hookID = SetHook(_proc);
             _InputKeyQueue = new List<QueueKey>();
             Application.Run();
+        }
+
+        static public void Close()
+        {
+            _isCheckingInput = false;
         }
 
         static public void Stop()
@@ -87,14 +94,14 @@ namespace CourseWork.Parts
         }
 
         static public List<QueueKey> getInputQueue()
-        {   
+        {
             bool acquiredLock = false;
             List<QueueKey> buff = null;
             try
             {
                 Monitor.Enter(InputQueuelocker, ref acquiredLock);
                 buff = _InputKeyQueue;
-            _InputKeyQueue = new List<QueueKey>();
+                _InputKeyQueue = new List<QueueKey>();
             }
             finally
             {
@@ -113,7 +120,7 @@ namespace CourseWork.Parts
             WM_KEYDOWN = 0x100,
             WM_KEYUP = 0x101,
             WM_SYSKEYDOWN = 0x104,
-            WM_SYSKEYUP = 0x105            
+            WM_SYSKEYUP = 0x105
         }
         private static LowLevelKeyboardProc _proc = HookCallback;
         private static IntPtr _hookID = IntPtr.Zero;
@@ -123,8 +130,8 @@ namespace CourseWork.Parts
 
         public struct QueueKey
         {
-           public Keys key;
-           public KeyStates state;
+            public Keys key;
+            public KeyStates state;
         }
 
         private struct KBHookStruct
@@ -149,6 +156,7 @@ namespace CourseWork.Parts
 
         private static IntPtr HookCallback(int nCode, int wParam, KBHookStruct lParam)
         {
+                        
             bool blnEat = false;
 
             if (nCode >= 0)
@@ -161,9 +169,9 @@ namespace CourseWork.Parts
                 };
                 _InputKeyQueue.Add(key);
             }
-                
-                switch (wParam)
-                {
+
+            switch (wParam)
+            {
                 case 256:
                 case 257:
                 case 260:
@@ -183,7 +191,7 @@ namespace CourseWork.Parts
             {
                 return (IntPtr)1;
             }
-            else 
+            else
             {
                 return CallNextHookEx(_hookID, nCode, wParam, ref lParam);
             }

@@ -16,10 +16,11 @@ using System.Threading;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-using CourseWork.Parts;
+
 
 namespace CourseWork
 {
+    using CourseWork.Parts;
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -27,7 +28,7 @@ namespace CourseWork
     {
         Settings _SettingWindow;
         WindowMask _WindowMask;
-        Manipulator manipulator;
+        public Manipulator manipulator;
 
         public MainMenu()
         {
@@ -38,47 +39,70 @@ namespace CourseWork
             //control.changeScreen += ChangeWindowToMask;
 
             _SettingWindow = new Settings();
-            //_SettingWindow.Owner = this;
-            //_SettingWindow.Show();
+            
             _WindowMask = new WindowMask();
-            //_WindowMask.Owner = this;
-            //_WindowMask.Show();
+           
 
             //mouse.Clip();
             ////Thread.Sleep(10000);
             //mouse.Unclip();
             //NotifyIcon icon = new NotifyIcon();
+
             //Dispatcher.Invoke(() =>
             //{
             //    this.Hide();
             //    _WindowMask.Show();
             //});
 
+            this.Show();
+            if (_SettingWindow.Owner == null)
+                _SettingWindow.Owner = this;
+            if (_WindowMask.Owner == null)
+                _WindowMask.Owner = this;
+            Button_Click(this, null);
         }
+
+
 
         private void ChangeWindowToMask(ScreenEdges flag)
         {
-
-
+            //Dispatcher.Invoke(() =>
+            //{
+            //    this.Hide();
+            //    _WindowMask.Show();
+            //});
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //Screen.p
             this.Hide();
-            if (_SettingWindow.Owner == null)
-                _SettingWindow.Owner = this;
-            
             _SettingWindow.Top = this.Top;
             _SettingWindow.Left = this.Left;
             _SettingWindow.Width = this.Width;
             _SettingWindow.Height = this.Height;
+            _SettingWindow.Reset();
             _SettingWindow.Show();
         }
 
         private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
 
+        }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {            
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            manipulator.Close();
+            foreach (Window window in this.OwnedWindows)
+            {
+                //if (window/*)*/
+                    window.Close();
+            }
+            //System.Windows.MessageBox.Show("Closed");
+            //System.Windows.Application.Current.Shutdown();
         }
     }
 }

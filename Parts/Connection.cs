@@ -10,32 +10,46 @@ using System.Net;
 namespace CourseWork.Parts
 {
 
-    public class Connection
-    {
-        public virtual void Connect(string input = "localhost", int port = 8888)
-        {
-        }
+    //public class Connection
+    //{
+    //    public virtual void Connect(string input = "localhost", int port = 8888)
+    //    {
+    //    }
 
-        public virtual void Listen(int count)
-        {
-        }
-    }
+    //    public virtual void Listen(int count)
+    //    {
+    //    }
+    //}
 
-    public class UdpConnection : Connection
+    public class UdpConnection
     {
-        UdpClient client;
+        public UdpClient client;
 
         public UdpConnection()
         {
             client = new UdpClient();
         }
 
-        public override void Connect(string input = "127.0.0.1", int port = 8888)
+        public void Connect(string input_ = "127.0.0.1", string port_ = "8888")
         {
             try
             {
-                IPAddress localAddr = IPAddress.Parse(input);
-                client.Connect(localAddr, port);
+                IPAddress localAddr = IPAddress.Parse(input_);
+                int port = int.Parse(port_);
+                IPEndPoint endPoint = new IPEndPoint(localAddr, port);
+                client.Connect(endPoint);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public void Connect(IPEndPoint endPoint)
+        {
+            try
+            {
+                client.Connect(endPoint);
             }
             catch (Exception ex)
             {
@@ -53,9 +67,7 @@ namespace CourseWork.Parts
             byte[] buff;
             try
             {
-                
                 buff = client.Receive(ref iPEndPoint);
-
             }
             catch (Exception ex)
             {
@@ -64,57 +76,149 @@ namespace CourseWork.Parts
             return buff;
         }
 
-        public void Listen(string input = "127.0.0.1", int port = 8888)
+        public void Close()
         {
-            try
-            {
-                IPAddress localAddr = IPAddress.Parse(input);
-                IPEndPoint iPEndPoint = new IPEndPoint(localAddr, port);
-                client.Receive(ref iPEndPoint);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            client.Close();
+            client.Dispose();
         }
+
+        //public void Listen(IPEndPoint iPEndPoint)
+        //{
+        //    try
+        //    {
+        //        //IPAddress localAddr = IPAddress.Parse(input);
+        //        //IPEndPoint iPEndPoint = new IPEndPoint(localAddr, port);
+        //        client.Receive(ref iPEndPoint);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
     }
 
-    class TcpConnection : Connection
+    public class TcpConnection
     {
-        TcpConnection()
+        TcpClient _Client;
+        TcpListener _Server;
+        public TcpConnection()
         {
+            _Client = new TcpClient();
         }
 
-        public new NetworkStream Connect(string input = "localhost", int port = 8888)
+        public TcpConnection(TcpClient e)
         {
-            TcpClient client = new TcpClient(); ;
+            _Client = e;
+        }
+
+        ~TcpConnection()
+        {
+            Close();
+        }
+
+        public NetworkStream Connect(string input = "localhost", int port = 8888)
+        {
             try
             {
-                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
-                client.Connect(localAddr, port);
+                IPAddress localAddr = IPAddress.Parse("input");
+                _Client.Connect(localAddr, port);
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                //ex.Message;
+                return null;
             }
-            return client.GetStream();
+            return _Client.GetStream();
+
         }
 
-        public NetworkStream Listen(string input = "127.0.0.1", int port = 8888)
+        public NetworkStream Connect(IPEndPoint endPoint)
         {
-            TcpClient client;
+            try
+            {
+                _Client.Connect(endPoint);
+            }
+            catch (Exception ex)
+            {
+                //(ex.Message);
+                return null;
+            }
+            return _Client.GetStream();
+        }
+
+        public bool Pending()
+        {
+            return _Server.Pending();
+        }
+
+        public TcpClient AcceptClient()
+        {
+            if (_Server != null)
+            {
+                TcpClient Client;
+                try
+                {
+                    
+                    Client = _Server.AcceptTcpClient();
+                    
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return Client;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public bool Listen(string input = "127.0.0.1", int port = 8888)
+        {
             try
             {
                 IPAddress localAddr = IPAddress.Parse(input);
-                TcpListener server = new TcpListener(localAddr, port);
-                server.Start();
-                client = server.AcceptTcpClient();
+                _Server = new TcpListener(localAddr, port);
+                _Server.Start();
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                //throw new Exception(ex.Message);
+                return false;
             }
-            return client.GetStream();
+            return true;
+        }
+
+        public bool Listen(IPEndPoint endPoint)
+        {
+            try
+            {
+                _Server = new TcpListener(endPoint);
+                _Server.Start();
+            }
+            catch (Exception ex)
+            {
+                //throw new Exception(ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public void Close()
+        {
+            if (_Server != null)
+            {
+                _Server.Stop();
+                //_Server.Server.Shutdown(SocketShutdown.Both);
+                _Server.Server.Close();
+            }
+            if (_Client != null)
+            {
+                _Client.Close();
+                _Client.Dispose();
+            }
+
         }
     }
 }

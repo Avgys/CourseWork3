@@ -18,18 +18,20 @@ namespace CourseWork.Parts
         public MouseHook _mouseHook;
 
         bool _isScreenChanged;
-
+        public bool _isCheckingInput;
 
         public EventController()
         {
             _mouseControl = new MouseControl();
+
             Thread keyboardHook = new Thread(new ThreadStart(KeyboardHook.Start));
             keyboardHook.Start();
-            
             //Thread mouseInput = new Thread(new ThreadStart(MouseHook.Start));
             //mouseInput.Start();
-            Thread checkInputs = new Thread(new ThreadStart(CheckInputs));
-            checkInputs.Start();
+
+            _isCheckingInput = true;
+            //Thread checkInputs = new Thread(new ThreadStart(CheckInputs));
+            //checkInputs.Start();
         }
 
         public void Start()
@@ -37,18 +39,23 @@ namespace CourseWork.Parts
 
         }
 
+        public void Close()
+        {
+            _isCheckingInput = false;            
+            KeyboardHook.Stop();
+        }
+
         public void CheckInputs()
         {
             ScreenEdges flag;
-            while (true)
+            while (_isCheckingInput)
             {
                 Thread.Sleep(100);
                 flag = _mouseControl.isMouseTouchScreenEdge();
                 if (flag != ScreenEdges.NONE)
                 {
                     _isScreenChanged = true;
-                    _changeScreen?.Invoke(flag);
-                    
+                    _changeScreen?.Invoke(flag);                    
                 }
             }
         }

@@ -13,122 +13,208 @@ using System.Windows;
 
 namespace CourseWork.Parts
 {
-    namespace SoundTranfer
+    using NAudio.Wave;
+    using NAudio.CoreAudioApi;
+
+    class SoundTransfer
     {
+        //Подключены ли мы
+        private bool _Connected;
+        //сокет отправитель
 
-        class SoundTransfer
+        //Socket _client;
+        List<UdpConnection> _ConnectionsToSend;
+
+        UdpConnection _ConnectionToReceive;
+        //поток для входящего звука для отправки
+        //WasapiLoopbackCapture _SoundInput;
+        WasapiCapture _SoundInput;
+        //поток для полученного звука
+        WasapiOut _SoundOutput;
+        //буфферный поток для передачи через сеть
+        BufferedWaveProvider _BufferStream;
+        //поток для прослушивания входящих сообщений
+        Thread in_thread;
+        //сокет для приема (протокол UDP)
+        Manipulator MainControler;
+
+        public static List<MMDevice> GetDeviceNames()
         {
-            //Подключены ли мы
-            private bool _Connected;
-            //сокет отправитель
-            //Socket _client;
-            UdpConnection _ConnectionToSend;
-
-            UdpConnection _ConnectionToReceive;
-            //поток для нашей речи
-            WaveIn _SoundInput;
-            //поток для речи собеседника
-            WaveOut _SoundOutput;
-            //буфферный поток для передачи через сеть
-            BufferedWaveProvider _BufferStream;
-            //поток для прослушивания входящих сообщений
-            Thread in_thread;
-            //сокет для приема (протокол UDP)
-            //Socket listeningSocket;
-            Manipulator MainControler;
-            public SoundTransfer(Manipulator mainControler)
+            List<MMDevice> Devices = new List<MMDevice>();
+            var enumerator = new MMDeviceEnumerator();
+            foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active))
             {
-                MainControler = mainControler;
-                //создаем поток для записи нашей речи
-                _SoundInput = new WaveIn();
-                //MessageBox.Show(_SoundInput.DeviceNumber.ToString());
-                //определяем его формат - частота дискретизации 8000 Гц, ширина сэмпла - 16 бит, 1 канал - моно
-                _SoundInput.WaveFormat = new WaveFormat(48000, 24, 1);
-                //добавляем код обработки нашего голоса, поступающего на микрофон
-                _SoundInput.DataAvailable += Sound_Input;
-                //создаем поток для прослушивания входящего звука
-                _SoundOutput = new WaveOut();
+                if (wasapi.State == DeviceState.Active)
+                {
+                    Devices.Add(wasapi);
+                }
+            }
+            return Devices;
+        }
+
+        ~SoundTransfer()
+        {
+            StopRecord();
+            _SoundOutput.Stop();
+        }
+
+        public void Stop()
+        {
+            StopRecord();
+            _SoundOutput.Stop();
+        }
+
+        public SoundTransfer(Manipulator mainControler)
+        {
+
+
+            _Connected = false;
+            MainControler = mainControler;
+            //создаем поток для прослушивания
+            var enumerator = new MMDeviceEnumerator();
+            if (mainControler._options.isReceivingSound)
+            {
+                var device = enumerator.GetDevice(MainControler._options.defaultOutputSound);
+                _SoundOutput = new WasapiOut(device, AudioClientShareMode.Shared, false, 300);
+                
                 //создаем поток для буферного потока и определяем у него такой же формат как и потока с микрофона
-                _BufferStream = new BufferedWaveProvider(new WaveFormat(48000, 24, 1));
+                _BufferStream = new BufferedWaveProvider(new WaveFormat(48000, 32, 2));
                 //привязываем поток входящего звука к буферному потоку
                 _SoundOutput.Init(_BufferStream);
-                //сокет для отправки звука
-                _ConnectionToSend = new UdpConnection();
-
-                //client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                _Connected = false;
                 _ConnectionToReceive = new UdpConnection();
-                //listeningSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                //создаем поток для прослушивания
                 in_thread = new Thread(new ThreadStart(Listening));
                 //запускаем его
+                in_thread.Name = "Listening Sound";
                 in_thread.Start();
             }
-
-            //Обработка нашего голоса
-            private void Sound_Input(object sender, WaveInEventArgs e)
+            if (mainControler._options.isSendingSound)
             {
-                try
-                {
-                    //Подключаемся к удаленному адресу
-                    IPEndPoint remote_point = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5555);
-                    //посылаем байты, полученные с микрофона на удаленный адрес
-                    _ConnectionToSend.Send(e.Buffer);
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            //Прослушивание входящих подключений
-            private void Listening()
-            {
-                //Прослушиваем по адресу
+                var device = enumerator.GetDevice(MainControler._options.defaultInputSound);
+                _SoundInput = new WasapiCapture(device);
 
-                //начинаем воспроизводить входящий звук
-                _SoundOutput.Play();
-                //адрес, с которого пришли данные
-                EndPoint remoteIp = new IPEndPoint(IPAddress.Any, 0);
-                //бесконечный цикл
-                while (true)
-                {                    
-                    //_Connected = MainControler._isSoundConnected;
-                    //_Connected = true;
-                    if (_Connected)
-                    {
-                        //_ConnectionToReceive.Connect("127.0.0.1", 8888);
+                //создаем поток для записи нашей речи
+                //_SoundInput = new WaveIn();
 
-                        while (_Connected)
-                        {
-                            try
-                            {
-                                //промежуточный буфер
-                                //byte[] data = new byte[65535];
-                                //получено данных
-                                IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                                byte[] buff = _ConnectionToReceive.Receive(ref iPEndPoint);
-                                //добавляем данные в буфер, откуда output будет воспроизводить звук
-                                _BufferStream.AddSamples(buff, 0, buff.Length);
-                            }
-                            catch (Exception ex)
-                            {
-                                throw ex;
-                            }
-                        }
-                    }
-                    Thread.Sleep(300);
-                }
-            }
-
-            public void StartRecord()
-            {
-                _SoundInput.StartRecording();
-            }
-
-            public void StopRecord()
-            {
-                _SoundInput.StopRecording();
+                //определяем его формат - частота дискретизации 8000 Гц, ширина сэмпла - 16 бит, 1 канал - моно
+                //_SoundInput.WaveFormat = new WaveFormat(48000, 24, 2);
+                //добавляем код обработки нашего голоса, поступающего на микрофон
+                _SoundInput.DataAvailable += Sound_Input;
+                StartRecord();
             }
         }
+
+        public void CheckSendConnections(List<IPEndPoint> remoteClients)
+        {
+
+            List<IPEndPoint> remoteEndPoints = new List<IPEndPoint>();
+            if (_ConnectionsToSend != null)
+            {
+                foreach (var connection in _ConnectionsToSend)
+                {
+                    if (!remoteClients.Contains(connection.client.Client.RemoteEndPoint as IPEndPoint))
+                    {
+                        connection.Close();
+                        _ConnectionsToSend.Remove(connection);
+                    }
+                    else
+                    {
+                        remoteEndPoints.Add(connection.client.Client.RemoteEndPoint as IPEndPoint);
+                    }
+                }
+
+                for (int i = 0; i < remoteClients.Count; i++)
+                {
+                    if (remoteEndPoints.Contains(remoteClients[i]))
+                    {
+                        //(remoteClients.RemoveAt(i));
+                        remoteEndPoints.Add(remoteClients[i]);
+                    }
+                    else
+                    {
+                        UdpConnection temp = new UdpConnection();
+                        temp.Connect(remoteClients[i]);
+                        _ConnectionsToSend.Add(temp);
+                    }
+                }
+            }
+            else
+            {
+                _ConnectionsToSend = new List<UdpConnection>();
+                foreach (var endPoint in remoteClients)
+                {
+                        UdpConnection temp = new UdpConnection();
+                        temp.Connect(endPoint);
+                        _ConnectionsToSend.Add(temp);
+                }
+            }
+        }
+
+        //Обработка нашего голоса
+        private void Sound_Input(object sender, WaveInEventArgs e)
+        {
+            try
+            {
+                //Рассылаем всем подключенным клиентам
+                foreach (var connection in _ConnectionsToSend)
+                {
+                    connection.Send(e.Buffer);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        //Прослушивание входящих подключений
+        private void Listening()
+        {
+            //Прослушиваем по адресу
+            //начинаем воспроизводить входящий звук
+            _SoundOutput.Play();
+            //адрес, с которого пришли данные
+            EndPoint remoteIp = new IPEndPoint(IPAddress.Any, 0);
+            //бесконечный цикл
+            while (MainControler._options.isReceivingSound)
+            {
+                _Connected = MainControler._isSoundConnected;
+                //_Connected = true;
+                if (_Connected)
+                {
+                    //_ConnectionToReceive.Connect("127.0.0.1", 8888);
+
+                    while (_Connected)
+                    {
+                        try
+                        {
+                            //промежуточный буфер
+                            //byte[] data = new byte[65535];
+                            //получено данных
+                            IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                            byte[] buff = _ConnectionToReceive.Receive(ref iPEndPoint);
+                            //добавляем данные в буфер, откуда output будет воспроизводить звук
+                            _BufferStream.AddSamples(buff, 0, buff.Length);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+                    }
+                }
+                Thread.Sleep(100);
+            }
+            _SoundOutput.Stop();
+        }
+
+        public void StartRecord()
+        {
+            _SoundInput.StartRecording();
+        }
+
+        public void StopRecord()
+        {
+            _SoundInput.StopRecording();
+        }
     }
+
 }

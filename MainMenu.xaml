@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CourseWork"
         mc:Ignorable="d"
-        Title="MainWindow" Height="387" Width="794" IsVisibleChanged="Window_IsVisibleChanged" Background="#FF323232">
+        Title="MainWindow" Height="387" Width="794" IsVisibleChanged="Window_IsVisibleChanged" Background="#FF323232" Activated="Window_Activated" Closing="Window_Closing">
 
     <Grid>
         <Grid.RowDefinitions>
