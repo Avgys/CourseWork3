@@ -543,10 +543,18 @@ namespace CourseWork.Parts
             System.IO.File.WriteAllText("./Settings.json", json);
         }
 
-        //public void CheckSoundClients(List<IPEndPoint> remoteClients)
-        //{
-        //    _sound.CheckSendConnections(remoteClients);
-        //}
+        public void CheckSoundClients()
+        {
+            List<IPEndPoint> remoteClients = new();
+            foreach(var e in ConnectedRemoteClientsAddress)
+            {
+                if(e?.Sound != null)
+                {
+                    remoteClients.Add(e.Sound);
+                }
+            }
+            _sound.CheckSendConnections(remoteClients);
+        }
 
         public void ChangeScreen(ScreenEdges side)
         {

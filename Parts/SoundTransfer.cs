@@ -73,7 +73,7 @@ namespace CourseWork.Parts
             _Connected = false;
             MainControler = mainControler;
             //создаем поток для прослушивания
-
+            _ClientsAddress = new();
             if (mainControler._options.isReceivingSound)
             {
                 Activate(DataFlow.Render);
