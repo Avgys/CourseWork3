@@ -113,12 +113,15 @@ namespace CourseWork.Parts
 
         private void RemoveRemoteTcp(IPEndPoint e)
         {
-            foreach (var elem in ConnectedRemoteClientsAddress)
-                if (e == elem.RemoteClient)
-                {
-                    ConnectedRemoteClientsAddress.Remove(elem);
-                }
-            CheckSoundClients();
+            lock (ConnectedRemoteLock)
+            {
+                foreach (var elem in ConnectedRemoteClientsAddress)
+                    if (e == elem.RemoteClient)
+                    {
+                        ConnectedRemoteClientsAddress.Remove(elem);
+                    }
+                CheckSoundClients();
+            }
         }
 
         private void CheckSubNet()
@@ -538,7 +541,8 @@ namespace CourseWork.Parts
                 lock (ConnectedRemoteLock)
                     foreach (var elem in list)
                     {
-                        ConnectedRemoteClientsAddress.RemoveAll(x => x.RemoteClient == elem.tcpInfo.IPEndPoint);
+                        //ConnectedRemoteClientsAddress.RemoveAll(x => x.RemoteClient == elem.tcpInfo.IPEndPoint);
+                        RemoveRemoteTcp(elem.tcpInfo.IPEndPoint)
                         elem.tcpInfo.Close();
                         _Clients.Remove(elem);
 
