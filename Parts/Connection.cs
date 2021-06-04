@@ -34,7 +34,7 @@ namespace CourseWork.Parts
         {
             get
             {
-                return client.Client.RemoteEndPoint as IPEndPoint;
+                return client.Client.LocalEndPoint as IPEndPoint;
             }
         }
 
