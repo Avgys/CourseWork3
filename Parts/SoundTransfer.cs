@@ -100,7 +100,7 @@ namespace CourseWork.Parts
                 }
                 catch
                 {
-                    device = enumerator.GetDefaultAudioEndpoint(flow,Role.Multimedia)
+                    device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
                 }
                 _SoundOutput = new WasapiOut(device, AudioClientShareMode.Shared, false, 300);
 
