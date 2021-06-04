@@ -305,7 +305,7 @@ namespace CourseWork.Parts
             }
             catch
             {
-                RemoveRemoteTcp(client.Socket.RemoteEndPoint as IPEndPoint);
+                //RemoveRemoteTcp(client.Socket.RemoteEndPoint as IPEndPoint);
                 client.Close();
                 return false;
             }
