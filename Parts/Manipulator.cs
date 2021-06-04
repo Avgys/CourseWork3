@@ -79,6 +79,8 @@ namespace CourseWork.Parts
             LoadSettings();
             //Setting on Accepting external connections
 
+            _sound = new SoundTransfer(this);
+
             _MainListener = new TcpConnection();
             _MainListener.Listen(new IPEndPoint(localIP, _options.defualtTcpPort));
 
@@ -98,9 +100,6 @@ namespace CourseWork.Parts
             sendMessages.Name = "sendMessages";
             sendMessages.Start();
 
-
-
-            _sound = new SoundTransfer(this);
             //_fileTransfer = new FileTransfer();
             //_eventControler = new EventController();
             //_eventControler._changeScreen += ChangeScreen;

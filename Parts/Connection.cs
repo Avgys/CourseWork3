@@ -27,7 +27,7 @@ namespace CourseWork.Parts
 
         public UdpConnection()
         {
-            client = new UdpClient(0);            
+            client = new UdpClient(0);
         }
 
         public IPEndPoint IPEndPoint
@@ -114,7 +114,7 @@ namespace CourseWork.Parts
 
     public class TcpConnection
     {
-        TcpClient _Client;
+       public TcpClient _Client;
 
 
 
@@ -122,7 +122,7 @@ namespace CourseWork.Parts
         {
             get
             {
-                return _Client.Client.RemoteEndPoint as IPEndPoint;
+                return _Client?.Client?.RemoteEndPoint as IPEndPoint;
             }
         }
         public bool isClientConnected
@@ -132,7 +132,9 @@ namespace CourseWork.Parts
                 return _Client.Connected;
             }
         }
-        TcpListener _Server;
+
+        public TcpListener _Server;
+
         public TcpConnection()
         {
             _Client = new TcpClient();
@@ -183,7 +185,7 @@ namespace CourseWork.Parts
         {
             try
             {
-                var result = _Client.BeginConnect(endPoint.Address, endPoint.Port, null,null);
+                var result = _Client.BeginConnect(endPoint.Address, endPoint.Port, null, null);
 
                 var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(5));
 
