@@ -227,7 +227,8 @@ namespace CourseWork.Parts
         private bool SendCommand(Commands command, NetworkStream client)
         {
             string endPoint = "";
-            switch (command! & Commands.SET! & Commands.UNSET! & Commands.ACCEPT)
+            Commands neutral = (Commands)188;
+            switch (command & neutral)
             {
                 case Commands.MainTCP:
                     {
