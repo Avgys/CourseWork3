@@ -92,7 +92,16 @@ namespace CourseWork.Parts
             var enumerator = new MMDeviceEnumerator();
             if (flow == DataFlow.Render)
             {
-                var device = enumerator.GetDevice(MainControler._options.defaultOutputSound);
+
+                MMDevice device;
+                try
+                {
+                    device = enumerator.GetDevice(MainControler._options.defaultOutputSound);
+                }
+                catch
+                {
+                    device = enumerator.GetDefaultAudioEndpoint(flow,Role.Multimedia)
+                }
                 _SoundOutput = new WasapiOut(device, AudioClientShareMode.Shared, false, 300);
 
                 //создаем поток для буферного потока и определяем у него такой же формат как и потока с микрофона
@@ -108,8 +117,16 @@ namespace CourseWork.Parts
             }
 
             if (flow == DataFlow.Capture)
-            {
-                var device = enumerator.GetDevice(MainControler._options.defaultInputSound);
+            {                
+                MMDevice device;
+                try
+                {
+                    device = enumerator.GetDevice(MainControler._options.defaultInputSound);
+                }
+                catch
+                {
+                    device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
+                }
                 _SoundInput = new WasapiCapture(device);
 
                 _SoundInput.DataAvailable += SoundSend;
