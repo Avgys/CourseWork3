@@ -323,9 +323,20 @@ namespace CourseWork.Parts
                 {
 
                     byte[] buff = new byte[2048];
-                    int bytesRead = client.Stream.Read(buff, 0, 2048);
-                    if (bytesRead > 0)
-                        await Task.Run(() => ProcessCommand(buff, client, bytesRead));
+                    try
+                    {
+                        if (client.Stream.DataAvailable)
+                        {
+                            int bytesRead = client.Stream.Read(buff, 0, 2048);
+                            if (bytesRead > 0)
+                                await Task.Run(() => ProcessCommand(buff, client, bytesRead));
+                        }
+                    }
+                    catch
+                    {
+                        //client.Stream.Close();
+                        client.tcpInfo.Close();
+                    }
                     //string temp = Encoding.Default.GetString(buff);
                     //if (temp != "")
                     //    MessageBox.Show(temp);
