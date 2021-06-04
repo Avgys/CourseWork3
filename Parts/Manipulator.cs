@@ -24,7 +24,7 @@ namespace CourseWork.Parts
 
         public ConnectionInfo(IPEndPoint client = null, IPEndPoint sound = null, IPEndPoint eventValue = null, IPEndPoint file = null)
         {
-            
+
             Sound = sound;
             Event = eventValue;
             File = file;
@@ -46,10 +46,9 @@ namespace CourseWork.Parts
         public bool _isFileTranfering { set; get; }
         public bool _isSoundConnected { private set; get; }
 
+        public static object ConnectedRemoteLock = new object();
 
         public List<ConnectionInfo> ConnectedRemoteClientsAddress { get; private set; }
-
-        
 
         private List<TcpClientInfo> _Clients;
 
@@ -142,20 +141,23 @@ namespace CourseWork.Parts
                         IPEndPoint iPEnd = new IPEndPoint(ip, _options.defualtTcpPort);
                         //if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
                         if (ConnectedRemoteClientsAddress.Find(x => x.RemoteClient == iPEnd) == null)
-                        {                            
+                        {
                             TcpConnection temp = new TcpConnection();
                             NetworkStream buff = null;
                             buff = temp.ConnectAsync(iPEnd);
                             if (buff != null)
                             {
-                                ConnectedRemoteClientsAddress.Add(new ConnectionInfo(iPEnd));
-                                _Clients.Add(
-                                    new TcpClientInfo
-                                    {
-                                        Stream = buff,
-                                        tcpInfo = temp
-                                    }
-                                    );
+                                lock (ConnectedRemoteLock)
+                                {
+                                    ConnectedRemoteClientsAddress.Add(new ConnectionInfo(iPEnd));
+                                    _Clients.Add(
+                                        new TcpClientInfo
+                                        {
+                                            Stream = buff,
+                                            tcpInfo = temp
+                                        }
+                                        );
+                                }
                             }
                         }
                     }
@@ -182,11 +184,12 @@ namespace CourseWork.Parts
             _MainListener.Close();
             if (_Clients != null)
             {
-                foreach (var client in _Clients)
-                {
-                    client.Stream.Close();
-                    client.tcpInfo.Close();
-                }
+                lock (ConnectedRemoteLock)
+                    foreach (var client in _Clients)
+                    {
+                        client.Stream.Close();
+                        client.tcpInfo.Close();
+                    }
             }
             if (acceptingClients.IsAlive)
             {
@@ -268,12 +271,12 @@ namespace CourseWork.Parts
             buff.Append<byte>((byte)bytesLength);
 
             buff.Append<byte>((byte)command);
-            
+
 
             foreach (var bytes in Encoding.UTF8.GetBytes(endPoint))
                 buff.Append<byte>(bytes);
             try
-            { 
+            {
                 client.Write(buff, 0, bytesLength);
                 return true;
             }
@@ -304,7 +307,7 @@ namespace CourseWork.Parts
                         byte[] IpBuff = new byte[bytesRead - 2];
                         buff.CopyTo(IpBuff, 2);
                         IPEndPoint iPEnd;
-                        if(IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
+                        if (IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
                         {
                             _sound._ClientsAddress.Add(iPEnd);
                         }
@@ -326,29 +329,30 @@ namespace CourseWork.Parts
         private async void ReadMessagesMainStream()
         {
             while (_isRecevingMessages)
-            {
-                foreach (TcpClientInfo client in _Clients)
-                {
+            {                
+                var list = _Clients.ToList();
+                    foreach (TcpClientInfo client in list)
+                    {
 
-                    byte[] buff = new byte[2048];
-                    try
-                    {
-                        if (client.Stream.DataAvailable)
+                        byte[] buff = new byte[2048];
+                        try
                         {
-                            int bytesRead = client.Stream.Read(buff, 0, 2048);
-                            if (bytesRead > 0)
-                                await Task.Run(() => ProcessCommand(buff, client, bytesRead));
+                            if (client.Stream.DataAvailable)
+                            {
+                                int bytesRead = client.Stream.Read(buff, 0, 2048);
+                                if (bytesRead > 0)
+                                    await Task.Run(() => ProcessCommand(buff, client, bytesRead));
+                            }
                         }
+                        catch
+                        {
+                            //client.Stream.Close();
+                            client.tcpInfo.Close();
+                        }
+                        //string temp = Encoding.Default.GetString(buff);
+                        //if (temp != "")
+                        //    MessageBox.Show(temp);
                     }
-                    catch
-                    {
-                        //client.Stream.Close();
-                        client.tcpInfo.Close();
-                    }
-                    //string temp = Encoding.Default.GetString(buff);
-                    //if (temp != "")
-                    //    MessageBox.Show(temp);
-                }
                 Thread.Sleep(100);
             }
         }
@@ -359,39 +363,40 @@ namespace CourseWork.Parts
         {
             while (_isSendingMessages)
             {
-                foreach (TcpClientInfo client in _Clients)
-                {
-                    //string str = "message";
-                    Commands command = Commands.SET | Commands.SoundConnection;
-                    if(!SendCommand(command, client.Stream))
+                lock (ConnectedRemoteLock)
+                    foreach (TcpClientInfo client in _Clients)
                     {
-                        client.tcpInfo.Close();
+                        //string str = "message";
+                        Commands command = Commands.SET | Commands.SoundConnection;
+                        if (!SendCommand(command, client.Stream))
+                        {
+                            client.tcpInfo.Close();
+                        }
+
+
+                        //byte[] buff = new byte[2048];
+                        //Array.Clear(buff, 0, buff.Length);                    
+
+                        //SendCommand(command, client);
+
+                        //buff.Append<byte>((byte)command);
+                        //bytesLength++;
+                        //string endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                        //bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
+                        //buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
+
+                        //foreach (var byteBuff in address.Address.GetAddressBytes())
+                        //{
+                        //    buff.Append<byte>(byteBuff);
+                        //    bytesLength++;
+                        //}
+
+                        //buff.Append<byte>(address.Port);
+
+                        //client.Stream.Write(buff, 0, bytesLength);
+                        //Array.Clear(buff, 0, buff.Length);
+                        //client.Stream.Read(buff, 0, buff.Length);
                     }
-
-
-                    //byte[] buff = new byte[2048];
-                    //Array.Clear(buff, 0, buff.Length);                    
-
-                    //SendCommand(command, client);
-
-                    //buff.Append<byte>((byte)command);
-                    //bytesLength++;
-                    //string endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
-                    //bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
-                    //buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
-
-                    //foreach (var byteBuff in address.Address.GetAddressBytes())
-                    //{
-                    //    buff.Append<byte>(byteBuff);
-                    //    bytesLength++;
-                    //}
-
-                    //buff.Append<byte>(address.Port);
-
-                    //client.Stream.Write(buff, 0, bytesLength);
-                    //Array.Clear(buff, 0, buff.Length);
-                    //client.Stream.Read(buff, 0, buff.Length);
-                }
                 Thread.Sleep(100);
             }
         }
@@ -439,12 +444,15 @@ namespace CourseWork.Parts
                 {
                     TcpClient temp = _MainListener.AcceptClient();
                     TcpConnection tcpConnection = new TcpConnection(temp);
-                    _Clients.Add(new TcpClientInfo
+                    lock (ConnectedRemoteLock)
                     {
-                        Stream = temp.GetStream(),
-                        tcpInfo = tcpConnection
-                    });
-                    ConnectedRemoteClientsAddress.Add(new (temp.Client.RemoteEndPoint as IPEndPoint));
+                        _Clients.Add(new TcpClientInfo
+                        {
+                            Stream = temp.GetStream(),
+                            tcpInfo = tcpConnection
+                        });
+                        ConnectedRemoteClientsAddress.Add(new(temp.Client.RemoteEndPoint as IPEndPoint));
+                    }
                 }
             }
         }
@@ -474,16 +482,17 @@ namespace CourseWork.Parts
                                 NetworkStream buff = null;
                                 buff = temp.ConnectAsync(iPEnd);
                                 if (buff != null)
-                                {
-                                    ConnectedRemoteClientsAddress.Add(new (iPEnd));
-                                    _Clients.Add(
-                                        new TcpClientInfo
-                                        {
-                                            Stream = buff,
-                                            tcpInfo = temp
-                                        }
-                                        );
-                                }
+                                    lock (ConnectedRemoteLock)
+                                    {
+                                        ConnectedRemoteClientsAddress.Add(new(iPEnd));
+                                        _Clients.Add(
+                                            new TcpClientInfo
+                                            {
+                                                Stream = buff,
+                                                tcpInfo = temp
+                                            }
+                                            );
+                                    }
                             }
                             //if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
                             //{
@@ -505,6 +514,7 @@ namespace CourseWork.Parts
                     }
 
                 var list = _Clients.FindAll(x => !x.tcpInfo.isClientConnected);
+                lock(ConnectedRemoteLock)
                 foreach (var elem in list)
                 {
                     _Clients.Remove(elem);
@@ -568,9 +578,9 @@ namespace CourseWork.Parts
         public void CheckSoundClients()
         {
             List<IPEndPoint> remoteClients = new();
-            foreach(var e in ConnectedRemoteClientsAddress)
+            foreach (var e in ConnectedRemoteClientsAddress)
             {
-                if(e?.Sound != null)
+                if (e?.Sound != null)
                 {
                     remoteClients.Add(e.Sound);
                 }
