@@ -177,6 +177,7 @@ namespace CourseWork.Parts
             //бесконечный цикл
             while (MainControler._options.isReceivingSound)
             {
+                CheckSendConnections(MainControler.ConnectedRemoteClientsAddress);
                 _Connected = MainControler._isSoundConnected;
                 //_Connected = true;
                 if (_Connected)

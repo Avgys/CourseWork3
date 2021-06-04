@@ -32,6 +32,7 @@ namespace CourseWork
         {
             ClientsGrid.Visibility = Visibility.Hidden;
             SoundGrid.Visibility = Visibility.Hidden;
+            NetworkGrid.Visibility = Visibility.Hidden;
         }
 
         public void Reset()
@@ -49,7 +50,7 @@ namespace CourseWork
                 {
                     ClientsAddresses.Items.Add(Manipulator._currManipulator._options.serializableClients[i]);
                 }
-            }            
+            }
         }
 
         private void MainMenu_Click(object sender, RoutedEventArgs e)
@@ -116,6 +117,7 @@ namespace CourseWork
         private void Clients_Click(object sender, RoutedEventArgs e)
         {
             HideAllGrids();
+            ResetClientGrid();
             ClientsGrid.Visibility = Visibility.Visible;
         }
 
@@ -125,12 +127,12 @@ namespace CourseWork
             {
 
                 var options = Manipulator._currManipulator._options;
-                
+
                 RecordDevice.Items.Clear();
                 for (int i = 0; i < options._SoundDevices.Count; i++)
                 {
                     RecordDevice.Items.Add(options._SoundDevices[i].FriendlyName);
-                    if(options._SoundDevices[i].ID == options.defaultInputSound)
+                    if (options._SoundDevices[i].ID == options.defaultInputSound)
                     {
                         RecordDevice.SelectedItem = options._SoundDevices[i].FriendlyName;
                     }
@@ -139,7 +141,7 @@ namespace CourseWork
                 for (int i = 0; i < options._SoundDevices.Count; i++)
                 {
                     if (options._SoundDevices[i].DataFlow == NAudio.CoreAudioApi.DataFlow.Render)
-                    PlayDevice.Items.Add(options._SoundDevices[i].FriendlyName);
+                        PlayDevice.Items.Add(options._SoundDevices[i].FriendlyName);
                     if (options._SoundDevices[i].ID == options.defaultOutputSound)
                     {
                         PlayDevice.SelectedItem = options._SoundDevices[i].FriendlyName;
@@ -158,7 +160,7 @@ namespace CourseWork
         private void SetRecordDevice_Click(object sender, RoutedEventArgs e)
         {
             Manipulator._currManipulator._options.SetDefaultInputSound(RecordDevice.SelectedItem.ToString());
-            
+
         }
 
         private void SetPlayDevice_Click(object sender, RoutedEventArgs e)
@@ -166,10 +168,44 @@ namespace CourseWork
             Manipulator._currManipulator._options.SetDefaultoutputSound(PlayDevice.SelectedItem.ToString());
         }
 
-        
+
         private void Window_Closing(object sender, EventArgs e)
         {
-            this.Owner.Close();
+            if (!this.Owner.IsActive)
+                this.Owner.Close();
+        }
+
+        private void ResetNetworkGrid()
+        {
+            TCPport.Text = Manipulator._currManipulator._options.defualtTcpPort.ToString();
+            UDPport.Text = Manipulator._currManipulator._options.defualtUdpPort.ToString();
+        }
+
+        private void DefalutPorts_Click(object sender, RoutedEventArgs e)
+        {
+            HideAllGrids();
+            ResetNetworkGrid();
+            NetworkGrid.Visibility = Visibility.Visible;
+        }
+
+        private void SetPorts_Click(object sender, RoutedEventArgs e)
+        {
+            int temp = -1;
+            int.TryParse(TCPport.Text, out temp);
+            if (temp != -1)
+                Manipulator._currManipulator._options.defualtTcpPort = temp;
+            temp = -1;
+            int.TryParse(UDPport.Text, out temp);
+            if (temp != -1)
+                Manipulator._currManipulator._options.defualtUdpPort = temp;
+        }
+
+        private void Remove_Click(object sender, RoutedEventArgs e)
+        {
+            var options = Manipulator._currManipulator._options;
+            if (options.isContainsClient(IpAddress.Text, Port.Text))
+                options.RemoveClient(IpAddress.Text, Port.Text);
+            ResetClientGrid();
         }
     }
 }

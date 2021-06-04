@@ -31,7 +31,10 @@ namespace CourseWork.Parts
         public int defaultSoundPort { get; set; }
         public int defaultEventPort { get; set; }
         public int defaultFilePort { get; set; }
+
         public int defualtTcpPort { get; set; }
+        public int defualtUdpPort { get; set; }
+
         public bool _isAcceptable { set; get; }
         public bool _isTryingConnect { set; get; }
 
@@ -47,6 +50,7 @@ namespace CourseWork.Parts
         public bool isReceivingSound { get; private set; }
         [JsonIgnore]
         public bool isSendingSound { get; private set; }
+
 
         //public struct clientInfo
         //{
@@ -65,10 +69,10 @@ namespace CourseWork.Parts
             serializableClients = new List<string>();
             remoteClientsAddress = new List<IPEndPoint>();
             SetSoundParams();
-            if (!isContainsClient("127.0.0.1", "8888"))
-            {
-                AddClient("127.0.0.1", "8888");
-            }
+            //if (!isContainsClient("127.0.0.1", "8888"))
+            //{
+            //    AddClient("127.0.0.1", "8888");
+            //}
         }
 
         ~Options()
@@ -98,11 +102,11 @@ namespace CourseWork.Parts
             var enumerator = new MMDeviceEnumerator();
             foreach (var wasapi in enumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active))
             {
-                if ( wasapi.FriendlyName == devicename)
+                if (wasapi.FriendlyName == devicename)
                 {
                     defaultInputSound = wasapi.ID;
                     break;
-                }    
+                }
             }
         }
         public void SetDefaultoutputSound(string devicename)
@@ -136,7 +140,6 @@ namespace CourseWork.Parts
             {
 
             }
-            return false;
         }
 
         public bool AddClient(string ip_, string port_)
@@ -171,11 +174,12 @@ namespace CourseWork.Parts
                 if (remoteClientsAddress.Contains(iPEndPoint))
                 {
                     remoteClientsAddress.Remove(iPEndPoint);
+                    serializableClients.Remove(iPEndPoint.ToString());
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);                
+                MessageBox.Show(ex.Message);
             }
             finally
             {
