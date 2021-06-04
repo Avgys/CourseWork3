@@ -192,6 +192,26 @@ namespace CourseWork.Parts
             return true;
         }
 
+        public bool AddClient(IPEndPoint e)
+        {
+            try
+            {                
+                lock (Manipulator.remoteClientsAddressInUseLock)
+                    remoteClientsAddress.Add(e);
+                serializableClients.Add(e.ToString());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+            finally
+            {
+
+            }
+            return true;
+        }
+
         public void RemoveClient(string ip_, string port_)
         {
             try

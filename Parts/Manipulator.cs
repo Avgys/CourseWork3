@@ -451,6 +451,7 @@ namespace CourseWork.Parts
                             Stream = temp.GetStream(),
                             tcpInfo = tcpConnection
                         });
+                        _options.AddClient(temp.Client.RemoteEndPoint as IPEndPoint);
                         ConnectedRemoteClientsAddress.Add(new(temp.Client.RemoteEndPoint as IPEndPoint));
                     }
                 }
@@ -522,7 +523,7 @@ namespace CourseWork.Parts
                 }
                 if (firstTime)
                 {
-                    CheckSubNet();
+                    //CheckSubNet();
                     firstTime = false;
                 }
                 Thread.Sleep(500); // choose a number (in milliseconds) that makes sense                
