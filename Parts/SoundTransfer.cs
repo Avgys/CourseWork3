@@ -23,7 +23,7 @@ namespace CourseWork.Parts
         //Подключены ли мы
         private bool _Connected;
         //сокет отправитель
-
+        object SoundClienAddresses = new();
         //Socket _client;
         public List<IPEndPoint> _ClientsAddress;
 
@@ -140,8 +140,8 @@ namespace CourseWork.Parts
 
         public void CheckSendConnections(List<IPEndPoint> remoteClients)
         {
-
-            _ClientsAddress = remoteClients;
+            lock (SoundClienAddresses)
+                _ClientsAddress = remoteClients;
             //if (_ClientsAddress != null)
             //{
 
@@ -188,10 +188,11 @@ namespace CourseWork.Parts
             try
             {
                 //Рассылаем всем подключенным клиентам
-                foreach (var address in _ClientsAddress)
-                {
-                    _ConnectionToSend.Send(e.Buffer, address);
-                }
+                lock (SoundClienAddresses)
+                    foreach (var address in _ClientsAddress)
+                    {
+                        _ConnectionToSend.Send(e.Buffer, address);
+                    }
 
             }
             catch (Exception ex)
