@@ -137,6 +137,7 @@ namespace CourseWork.Parts
             try
             {
                 _Client.Connect(endPoint);
+                
             }
             catch (Exception ex)
             {
@@ -144,6 +145,20 @@ namespace CourseWork.Parts
                 return null;
             }
             return _Client.GetStream();
+        }
+
+       async public void ConnectAsync(IPEndPoint endPoint)
+        {
+            try
+            {
+               await Task.Run(()=> _Client.Connect(endPoint));
+            }
+            catch (Exception ex)
+            {
+                //(ex.Message);
+                
+            }
+            //return _Client.GetStream();
         }
 
         public bool Pending()

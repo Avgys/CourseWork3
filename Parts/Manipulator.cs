@@ -12,6 +12,7 @@ namespace CourseWork.Parts
     using System.Net.Sockets;
     using System.Net;
     using System.Net.NetworkInformation;
+    using System.Threading.Tasks;
 
     public class Manipulator
     {
@@ -79,6 +80,62 @@ namespace CourseWork.Parts
             //_fileTransfer = new FileTransfer();
             //_eventControler = new EventController();
             //_eventControler._changeScreen += ChangeScreen;
+
+            CheckSubNet();
+        }
+
+        private async void CheckSubNet()
+        {
+
+            Ping pingSender = new Ping();
+            PingOptions options = new PingOptions();
+
+            options.DontFragment = true;
+
+            byte[] maskBytes = new byte[4];
+            for (int i = 0; i < 4; i++)
+            {
+                maskBytes[i] = (byte)(localIP.GetAddressBytes()[i] & SubnetMask.GetAddressBytes()[i]);
+            }
+            maskBytes[3]++;
+
+            byte[] buffer = new byte[1024];
+            int timeout = 1;
+
+            for (int i = 0; i < 255; i++)
+            {
+                maskBytes[3]++;
+                IPAddress ip = new IPAddress(maskBytes);
+
+                PingReply reply = pingSender.Send(ip, timeout, buffer, options);
+                if (reply.Status == IPStatus.Success)
+                {
+                    if (ip.ToString() != localIP.ToString())
+                    {
+                        IPEndPoint iPEnd = new IPEndPoint(ip, _options.defualtTcpPort);
+                        if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
+                        {
+                            TcpConnection temp = new TcpConnection();
+                            NetworkStream buff = null;
+                            await Task.Run(() => buff = temp.Connect(iPEnd));                            
+                            if (buff != null)
+                            {
+                                ConnectedRemoteClientsAddress.Add(iPEnd);
+                                _Clients.Add(
+                                    new ClientInfo
+                                    {
+                                        Stream = buff,
+                                        tcpInfo = temp
+                                    }
+                                    );
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            //MessageBox.Show("Ended");
         }
 
         ~Manipulator()
@@ -231,7 +288,7 @@ namespace CourseWork.Parts
                     }
                 }
                 Thread.Sleep(500); // choose a number (in milliseconds) that makes sense
-            } 
+            }
             while (_options._isTryingConnect);
         }
 
