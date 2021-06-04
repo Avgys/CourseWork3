@@ -30,6 +30,14 @@ namespace CourseWork.Parts
             client = new UdpClient();
         }
 
+        public IPEndPoint IPEndPoint
+        {
+            get
+            {
+                return client.Client.RemoteEndPoint as IPEndPoint;
+            }
+        }
+
         public void Connect(string input_ = "127.0.0.1", string port_ = "8888")
         {
             try

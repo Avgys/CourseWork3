@@ -23,9 +23,9 @@ namespace CourseWork.Parts
         //сокет отправитель
 
         //Socket _client;
-        List<UdpConnection> _ConnectionsToSend;
+        public List<UdpConnection> _ConnectionsToSend;
 
-        UdpConnection _ConnectionToReceive;
+        public UdpConnection _ConnectionToReceive;
         //поток для входящего звука для отправки
         //WasapiLoopbackCapture _SoundInput;
         WasapiCapture _SoundInput;
@@ -66,8 +66,6 @@ namespace CourseWork.Parts
 
         public SoundTransfer(Manipulator mainControler)
         {
-
-
             _Connected = false;
             MainControler = mainControler;
             //создаем поток для прослушивания
@@ -95,6 +93,16 @@ namespace CourseWork.Parts
                 _SoundInput.DataAvailable += Sound_Input;
                 StartRecord();
             }
+        }
+
+        public void Activate()
+        {
+
+        }
+
+        public void Deactivate()
+        {
+
         }
 
         public void CheckSendConnections(List<IPEndPoint> remoteClients)

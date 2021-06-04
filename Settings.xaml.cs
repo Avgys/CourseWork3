@@ -107,7 +107,7 @@ namespace CourseWork
 
         private void ClientsAddresses_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            IPEndPoint temp;
+            //IPEndPoint temp;
             //e.AddedItems;
 
             if (e.AddedItems.Count >= 1) {

@@ -15,7 +15,7 @@ namespace CourseWork.Parts
 
     public class Manipulator
     {
-        public static object remoteClientsAddressInUseLock = new  object();
+        public static object remoteClientsAddressInUseLock = new object();
         int _PCid;
         public Options _options;
         SoundTransfer _sound;
@@ -77,7 +77,7 @@ namespace CourseWork.Parts
             sendMessages.Name = "sendMessages";
             sendMessages.Start();
 
-            
+
 
             _sound = new SoundTransfer(this);
             //_fileTransfer = new FileTransfer();
@@ -173,22 +173,89 @@ namespace CourseWork.Parts
             MainTCP = 0x4,
             SoundConnection = 0x8,
             EventConnection = 0x10,
-            FileTranferConnection = 0x20
+            FileTranferConnection = 0x20,
+            ACCEPT = 0x40
         }
 
-        private void SendCommand(Commands e, NetworkStream stream)
+        private async void SendCommand(Commands command, ClientInfo client)
         {
+            byte[] buff = new byte[2048];
+            Array.Clear(buff, 0, buff.Length);
+            int bytesLength = 0;
+
+            buff.Append<byte>((byte)command);
+            bytesLength++;
+            string endPoint = "";
+            switch (command !& Commands.SET !& Commands.UNSET !& Commands.ACCEPT)
+            {
+                case Commands.MainTCP:
+                    {
+                        break;
+                    }
+                case Commands.SoundConnection:
+                    {
+                        if ((command & Commands.SET) != 0)
+                        {
+                            endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                        }
+                        break;
+                    }
+                case Commands.EventConnection:
+                    {
+                        if ((command & Commands.SET) != 0)
+                        {
+                            endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                        }
+                        break;
+                    }
+                case Commands.FileTranferConnection:
+                    {
+                        if ((command & Commands.SET) != 0)
+                        {
+                            //string endPoint = FileTranferConnection._ConnectionToReceive.IPEndPoint.ToString();
+                        }
+                        break;
+                    }
+            }
             
+                if((command & Commands.SET) != 0)
+                bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
+                buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
+
+                client.Stream.Write(buff, 0, bytesLength);
+                Array.Clear(buff, 0, buff.Length);
+            //client.Stream.Read(buff, 0, buff.Length);
+
         }
 
-        private void ProcessCommand(Commands e, NetworkStream stream)
-        {
+        private async void ProcessCommand(byte[] buff, ClientInfo client, int bytesRead)
+            {
+                Commands command = (Commands)buff[0];
 
-        }
+                switch (command)
+                {
+                    case Commands.MainTCP:
+                        {
+                            break;
+                        }
+                    case Commands.SoundConnection:
+                        {
+                            break;
+                        }
+                    case Commands.EventConnection:
+                        {
+                            break;
+                        }
+                    case Commands.FileTranferConnection:
+                        {
+                            break;
+                        }
+                }
+            }
 
         private bool _isRecevingMessages = true;
 
-        private void ReadMessagesMainStream()
+        private async void ReadMessagesMainStream()
         {
             while (_isRecevingMessages)
             {
@@ -196,10 +263,12 @@ namespace CourseWork.Parts
                 {
 
                     byte[] buff = new byte[2048];
-                    client.Stream.Read(buff, 0, 2048);
-                    string temp = Encoding.Default.GetString(buff);
-                    if (temp != "")
-                        MessageBox.Show(temp);
+                    int bytesRead = client.Stream.Read(buff, 0, 2048);
+                    if (bytesRead > 0)
+                        await Task.Run(() => ProcessCommand(buff, client, bytesRead));
+                    //string temp = Encoding.Default.GetString(buff);
+                    //if (temp != "")
+                    //    MessageBox.Show(temp);
                 }
                 Thread.Sleep(100);
             }
@@ -211,13 +280,30 @@ namespace CourseWork.Parts
             {
                 foreach (ClientInfo client in _Clients)
                 {
-                    string str = "message";
+                    //string str = "message";
                     Commands command = Commands.SET | Commands.SoundConnection;
-                    byte[] buff = new byte[2048];
-                    buff[0] = (byte)command;
-                    buff = Encoding.Default.GetBytes(str);
-                    
-                    client.Stream.Write(buff, 0, buff.Length);
+                    //byte[] buff = new byte[2048];
+                    //Array.Clear(buff, 0, buff.Length);                    
+
+                    //SendCommand(command, client);
+
+                    //buff.Append<byte>((byte)command);
+                    //bytesLength++;
+                    //string endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                    //bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
+                    //buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
+
+                    //foreach (var byteBuff in address.Address.GetAddressBytes())
+                    //{
+                    //    buff.Append<byte>(byteBuff);
+                    //    bytesLength++;
+                    //}
+
+                    //buff.Append<byte>(address.Port);
+
+                    //client.Stream.Write(buff, 0, bytesLength);
+                    //Array.Clear(buff, 0, buff.Length);
+                    //client.Stream.Read(buff, 0, buff.Length);
                 }
                 Thread.Sleep(100);
             }
@@ -313,7 +399,7 @@ namespace CourseWork.Parts
                     }
 
                 var list = _Clients.FindAll(x => !x.tcpInfo.isClientConnected);
-                foreach(var elem in list)
+                foreach (var elem in list)
                 {
                     _Clients.Remove(elem);
                     ConnectedRemoteClientsAddress.Remove(elem.tcpInfo.IPEndPoint);
