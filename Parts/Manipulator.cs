@@ -200,7 +200,7 @@ namespace CourseWork.Parts
             ACCEPT = 0x40
         }
 
-        private async void SendCommand(Commands command, ClientInfo client)
+        private async void SendCommand(Commands command, NetworkStream client)
         {
             byte[] buff = new byte[2048];
             Array.Clear(buff, 0, buff.Length);
@@ -245,7 +245,7 @@ namespace CourseWork.Parts
                 bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
                 buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
 
-                client.Stream.Write(buff, 0, bytesLength);
+                client.Write(buff, 0, bytesLength);
                 Array.Clear(buff, 0, buff.Length);
             //client.Stream.Read(buff, 0, buff.Length);
 
@@ -307,6 +307,9 @@ namespace CourseWork.Parts
                 {
                     //string str = "message";
                     Commands command = Commands.SET | Commands.SoundConnection;
+                    SendCommand(command, client.Stream);
+
+
                     //byte[] buff = new byte[2048];
                     //Array.Clear(buff, 0, buff.Length);                    
 
