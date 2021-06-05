@@ -283,24 +283,28 @@ namespace CourseWork.Parts
                     }
             }
 
-            byte[] buff = new byte[2048];
-            Array.Clear(buff, 0, buff.Length);
+
+            List<byte> buff = new ();
+            
             int bytesLength = 0;
             bytesLength += 2;
 
             if ((command & Commands.SET) != 0)
                 bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
 
-            buff.Append<byte>((byte)bytesLength);
+            buff.Add((byte)bytesLength);
 
-            buff.Append<byte>((byte)command);
+            buff.Add((byte)command);
 
+            //if ((command & Commands.SET) != 0)
+            //    foreach (var bytes in Encoding.UTF8.GetBytes(endPoint))
+            //        buff.Add(bytes);
             if ((command & Commands.SET) != 0)
-                foreach (var bytes in Encoding.UTF8.GetBytes(endPoint))
-                    buff.Append<byte>(bytes);
+                buff.AddRange(Encoding.UTF8.GetBytes(endPoint));
             try
             {
-                client.Write(buff, 0, bytesLength);
+                var arr = buff.ToArray();
+                client.Write(arr, 0, bytesLength);
                 return true;
             }
             catch
@@ -309,8 +313,7 @@ namespace CourseWork.Parts
                 client.Close();
                 return false;
             }
-
-            Array.Clear(buff, 0, buff.Length);
+            buff.Clear();
             //client.Stream.Read(buff, 0, buff.Length);
 
         }
