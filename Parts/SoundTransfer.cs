@@ -74,7 +74,7 @@ namespace CourseWork.Parts
             MainControler = mainControler;
             //создаем поток для прослушивания
             _ClientsAddress = new();
-            
+            _ConnectionToReceive = new UdpConnection();
             if (mainControler._options.isSendingSound)
             {
                 Activate(DataFlow.Capture);
@@ -110,7 +110,7 @@ namespace CourseWork.Parts
                 _BufferStream = new BufferedWaveProvider(_SoundOutput.OutputWaveFormat);
                 //привязываем поток входящего звука к буферному потоку
                 _SoundOutput.Init(_BufferStream);
-                _ConnectionToReceive = new UdpConnection();
+                
 
                 in_thread = new Thread(new ThreadStart(Listening));
                 //запускаем его

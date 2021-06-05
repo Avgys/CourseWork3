@@ -71,9 +71,10 @@ namespace CourseWork.Parts
 
         public Manipulator()
         {
-            _PCid = 1;
+            
             _currManipulator = this;
             SubnetMask = GetSubnetMask();
+            _PCid = localIP.GetAddressBytes()[3];
             ConnectedRemoteClientsAddress = new List<ConnectionInfo>();
             //_Clients = new List<TcpClientInfo>();
             //_Clients[0].tcpInfo.
@@ -265,9 +266,16 @@ namespace CourseWork.Parts
                     }
                 case Commands.EventConnection:
                     {
-                        if ((command & Commands.SET) != 0)
+                        if ((command & Commands.SET) == Commands.SET)
                         {
                             endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                        }
+                        else
+                        {
+                            if ((command & Commands.UNSET) == Commands.UNSET)
+                            {
+
+                            }
                         }
                         break;
                     }

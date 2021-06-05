@@ -22,17 +22,22 @@ namespace CourseWork.Parts
         public IPEndPoint currRemoteIP;
 
         public UdpConnection KeyLocalSocket;
+        public UdpConnection ConnectionToReceive;
+
         public MouseControl _mouseControl;
         public MouseHook _mouseHook;
 
         bool isSendingKey;
         bool _isScreenChanged;
-        public bool _isCheckingInput;
+        public bool _isRemoteCheckingInput;
 
         Thread keyboardHook;
         Thread keyboardEmulate;
         Thread GetRemoteKeys;
         Thread SendRemoteKeys;
+
+        private const int KEYEVENTF_EXTENDEDKEY = 1;
+        private const int KEYEVENTF_KEYUP = 2;
 
         public EventController()
         {
@@ -41,7 +46,7 @@ namespace CourseWork.Parts
             _mouseControl = new MouseControl();
 
             KeyLocalSocket = new UdpConnection();
-
+            ConnectionToReceive = new UdpConnection();
             keyboardHook = new Thread(new ThreadStart(KeyboardHook.Start));
             keyboardHook.Start();
 
@@ -57,7 +62,7 @@ namespace CourseWork.Parts
             //Thread mouseInput = new Thread(new ThreadStart(MouseHook.Start));
             //mouseInput.Start();
 
-            _isCheckingInput = true;
+            _isRemoteCheckingInput = true;
             //Thread checkInputs = new Thread(new ThreadStart(CheckInputs));
             //checkInputs.Start();
         }
@@ -65,7 +70,9 @@ namespace CourseWork.Parts
         public void Close()
         {
             //keyboardEmulate.Join();
-            _isCheckingInput = false;
+            ConnectionToReceive.Close();
+            KeyLocalSocket.Close();
+            _isRemoteCheckingInput = false;
             KeyboardHook.Stop();
             GetRemoteKeys.Join();
             keyboardHook.Join();
@@ -75,12 +82,29 @@ namespace CourseWork.Parts
 
         private void getRemoteKeys()
         {
-
+            while (_isRemoteCheckingInput)
+            {
+                IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                byte[] buff = ConnectionToReceive.Receive(ref iPEndPoint);
+                if (buff != null)
+                {
+                    List<byte> n = new List<byte>(buff);
+                    Keys key = (Keys)BitConverter.ToInt32(n.GetRange(0, 4).ToArray());
+                    KeyStates state = (KeyStates)BitConverter.ToInt32(n.GetRange(0, 4).ToArray());
+                    CallKeyboardEvent(key, state);
+                }
+            }
         }
 
-        private void CallKeyboardEvent()
-        {
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
 
+        private void CallKeyboardEvent(Keys key, KeyStates state)
+        {
+            if (state == KeyStates.WM_KEYDOWN)
+                keybd_event((byte)key, 0, KEYEVENTF_EXTENDEDKEY, 0);
+            else if (state == KeyStates.WM_KEYUP)
+                keybd_event((byte)key, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
         }
 
 
@@ -92,7 +116,7 @@ namespace CourseWork.Parts
 
                 foreach (var key in Events)
                 {
-                    List<byte> intBytes = new();                    
+                    List<byte> intBytes = new();
                     intBytes.AddRange(BitConverter.GetBytes((int)key.key));
                     //if (BitConverter.IsLittleEndian)
                     //    Array.Reverse(intBytes);
@@ -105,15 +129,10 @@ namespace CourseWork.Parts
             }
         }
 
-        public static void KeyDown(Keys vKey)
-        {
-            //keybd_event((byte)vKey, 0, KEYEVENTF_EXTENDEDKEY, 0);
-        }
 
-        public static void KeyUp(Keys vKey)
-        {
-            //keybd_event((byte)vKey, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
-        }
+
+
+
 
         public void CheckInputs()
         {
@@ -125,7 +144,7 @@ namespace CourseWork.Parts
                 if (flag != ScreenEdges.NONE)
                 {
                     _isScreenChanged = true;
-                    _changeScreen?.Invoke(flag);                    
+                    _changeScreen?.Invoke(flag);
                 }
             }
         }

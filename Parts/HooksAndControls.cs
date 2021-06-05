@@ -18,31 +18,15 @@ namespace CourseWork.Parts
         RIGHT = 0x16
     }
 
-    //public class EventCatcher
-    //{
+    [Flags]
+    public enum KeyStates
+    {
+        WM_KEYDOWN = 0x100,
+        WM_KEYUP = 0x101,
+        WM_SYSKEYDOWN = 0x104,
+        WM_SYSKEYUP = 0x105
+    }
 
-    //    public MouseControl _mouseControl;
-    //    public MouseHook _mouseHook;
-
-    //    public EventCatcher()
-    //    {
-
-
-
-
-
-    //        //Thread.Sleep(5000);
-
-    //        //keyboardInput.Interrupt();
-    //        //keyboardInput.Interrupt();
-    //        //keyboardInput.Resume();
-
-    //        //Thread mouseInput = new Thread(new ThreadStart(MouseHook.Start));
-    //        //mouseInput.Start();
-    //    }
-    //}
-
-    
     public static class KeyboardHook
     {
 
@@ -107,14 +91,7 @@ namespace CourseWork.Parts
         private const int WH_KEYBOARD_LL = 13;
         //private const int WH_KEYBOARD = 2;
 
-        [Flags]
-        public enum KeyStates
-        {
-            WM_KEYDOWN = 0x100,
-            WM_KEYUP = 0x101,
-            WM_SYSKEYDOWN = 0x104,
-            WM_SYSKEYUP = 0x105
-        }
+        
         private static LowLevelKeyboardProc _proc = HookCallback;
         private static IntPtr _hookID = IntPtr.Zero;
         private static List<QueueKey> _InputKeyQueue;
