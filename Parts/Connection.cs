@@ -27,7 +27,9 @@ namespace CourseWork.Parts
 
         public UdpConnection()
         {
-            client = new UdpClient(0);
+
+            client = new UdpClient(new IPEndPoint(Manipulator._currManipulator.localIP, 0));               
+            
         }
 
         public IPEndPoint IPEndPoint
@@ -90,6 +92,7 @@ namespace CourseWork.Parts
             }
             return buff;
         }
+
 
         public void Close()
         {

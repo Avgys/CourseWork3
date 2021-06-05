@@ -68,7 +68,7 @@ namespace CourseWork.Parts
         Thread sendMessages;
 
         IPAddress SubnetMask;
-        IPAddress localIP;
+        public IPAddress localIP;
 
         public Manipulator()
         {
