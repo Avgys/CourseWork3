@@ -284,8 +284,8 @@ namespace CourseWork.Parts
             }
 
 
-            List<byte> buff = new ();
-            
+            List<byte> buff = new();
+
             int bytesLength = 0;
             bytesLength += 2;
 
@@ -337,7 +337,14 @@ namespace CourseWork.Parts
                         IPEndPoint iPEnd;
                         if (IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
                         {
-                            _sound._ClientsAddress.Add(iPEnd);
+                            ConnectedRemoteClientsAddress.Find(x => x.RemoteClient == client.tcpInfo.IPEndPoint).Sound = iPEnd;
+
+                            //if (!ConnectedRemoteClientsAddress.Exists(x => x.Sound == iPEnd))
+                            //{
+                                
+                            //}
+                            //if (!_sound._ClientsAddress.Contains(iPEnd))
+                            //    _sound._ClientsAddress.Add(iPEnd);
                         }
                         break;
                     }
@@ -389,14 +396,14 @@ namespace CourseWork.Parts
 
         private void SendingMessagesMainStream()
         {
-            while (_isSendingMessages)
+            while (!_isSendingMessages)
             {
                 lock (ConnectedRemoteLock)
                     foreach (TcpClientInfo client in _Clients)
                     {
                         //string str = "message";
                         Commands command = Commands.SET | Commands.SoundConnection;
-                        if (!SendCommand(command, client.Stream))
+                        if (SendCommand(command, client.Stream))
                         {
                             client.tcpInfo.Close();
                         }

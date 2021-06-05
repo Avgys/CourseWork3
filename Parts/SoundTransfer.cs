@@ -233,11 +233,7 @@ namespace CourseWork.Parts
             {
                 //CheckSendConnections(MainControler.ConnectedRemoteClientsAddress);
                 _Connected = MainControler._isSoundConnected;
-                //_Connected = true;
-                if (_Connected)
-                {
-                    //_ConnectionToReceive.Connect("127.0.0.1", 8888);
-
+                //_Connected = true;                
                     while (_Connected)
                     {
                         try
@@ -254,8 +250,7 @@ namespace CourseWork.Parts
                         {
                             throw ex;
                         }
-                    }
-                }
+                    }                
                 Thread.Sleep(100);
             }
             _SoundOutput.Stop();
