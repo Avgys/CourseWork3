@@ -277,7 +277,7 @@ namespace CourseWork.Parts
             }
             if (_Client != null)
             {
-                _Client.GetStream().Close();
+                //_Client.GetStream().Close();
                 _Client.Close();
                 _Client.Dispose();
             }

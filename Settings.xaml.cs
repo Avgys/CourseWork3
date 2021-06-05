@@ -46,15 +46,15 @@ namespace CourseWork
             if (Manipulator._currManipulator._options != null)
             {
                 ClientsAddresses.Items.Clear();
-                List<IPEndPoint> ConnectedClients = new ();
+                List<ConnectionInfo> ConnectedClients = new ();
                 foreach (var e in Manipulator._currManipulator.ConnectedRemoteClientsAddress)
                 {
-                    ConnectedClients.Add(e.RemoteClient);
+                    ConnectedClients.Add(new (e.RemoteClient));
                 }
                 for (int i = 0; i < Manipulator._currManipulator._options.serializableClients.Count; i++)
                 {
                     bool flag = false;
-                    if (ConnectedClients.Contains(Manipulator._currManipulator._options.remoteClientsAddress[i]))
+                    if (ConnectedClients.Exists(x => x.RemoteClient.IPEndPoint == Manipulator._currManipulator._options.remoteClientsAddress[i]))
                         flag = true;
                     ClientsAddresses.Items.Add(Manipulator._currManipulator._options.serializableClients[i] + " " + flag.ToString());
                 }
