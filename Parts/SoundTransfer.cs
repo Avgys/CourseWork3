@@ -117,7 +117,8 @@ namespace CourseWork.Parts
             }
 
             if (flow == DataFlow.Capture)
-            {                
+            {
+                _ConnectionToSend = new UdpConnection();
                 MMDevice device;
                 try
                 {

@@ -332,7 +332,8 @@ namespace CourseWork.Parts
                     {
                         int headerLength = buff[0];
                         byte[] IpBuff = new byte[bytesRead - 2];
-                        buff.CopyTo(IpBuff, 2);
+                        Array.Copy(buff, 2, IpBuff, 0, bytesRead - 2);
+                        //buff.CopyTo(IpBuff, 2,);
                         IPEndPoint iPEnd;
                         if (IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
                         {
