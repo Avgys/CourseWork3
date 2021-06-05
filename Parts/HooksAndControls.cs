@@ -42,28 +42,18 @@ namespace CourseWork.Parts
     //    }
     //}
 
-    public class KeyboardControl
+    
+    public static class KeyboardHook
     {
+
         [DllImport("user32.dll")]
         private static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
 
         private const int KEYEVENTF_EXTENDEDKEY = 1;
         private const int KEYEVENTF_KEYUP = 2;
 
-        public static void KeyDown(Keys vKey)
-        {
-            keybd_event((byte)vKey, 0, KEYEVENTF_EXTENDEDKEY, 0);
-        }
+        
 
-        public static void KeyUp(Keys vKey)
-        {
-            keybd_event((byte)vKey, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
-        }
-    }
-
-
-    public static class KeyboardHook
-    {
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern bool BlockInput([In, MarshalAs(UnmanagedType.Bool)] bool fBlockIt);
@@ -76,7 +66,6 @@ namespace CourseWork.Parts
 
         static public void Start()
         {
-
             _hookID = SetHook(_proc);
             _InputKeyQueue = new List<QueueKey>();
             Application.Run();
@@ -100,6 +89,10 @@ namespace CourseWork.Parts
             try
             {
                 Monitor.Enter(InputQueuelocker, ref acquiredLock);
+                if(_InputKeyQueue.Count > 4)
+                {
+                    _InputKeyQueue.RemoveRange(0, _InputKeyQueue.Count - 4);
+                }
                 buff = _InputKeyQueue;
                 _InputKeyQueue = new List<QueueKey>();
             }

@@ -69,18 +69,19 @@ namespace CourseWork.Parts
         }
 
         public SoundTransfer(Manipulator mainControler)
-        {            
+        {
             _Connected = false;
             MainControler = mainControler;
             //создаем поток для прослушивания
             _ClientsAddress = new();
-            if (mainControler._options.isReceivingSound)
-            {
-                Activate(DataFlow.Render);
-            }
+            
             if (mainControler._options.isSendingSound)
             {
                 Activate(DataFlow.Capture);
+            }
+            if (mainControler._options.isReceivingSound)
+            {
+                Activate(DataFlow.Render);
             }
         }
 
@@ -88,7 +89,7 @@ namespace CourseWork.Parts
 
         public void Activate(DataFlow flow)
         {
-            
+
             var enumerator = new MMDeviceEnumerator();
             if (flow == DataFlow.Render)
             {
@@ -102,14 +103,15 @@ namespace CourseWork.Parts
                 {
                     device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
                 }
+                device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
                 _SoundOutput = new WasapiOut(device, AudioClientShareMode.Shared, false, 300);
-
+                
                 //создаем поток для буферного потока и определяем у него такой же формат как и потока с микрофона
-                _BufferStream = new BufferedWaveProvider(new WaveFormat(48000, 32, 2));
+                _BufferStream = new BufferedWaveProvider(_SoundOutput.OutputWaveFormat);
                 //привязываем поток входящего звука к буферному потоку
                 _SoundOutput.Init(_BufferStream);
                 _ConnectionToReceive = new UdpConnection();
-                
+
                 in_thread = new Thread(new ThreadStart(Listening));
                 //запускаем его
                 in_thread.Name = "Listening Sound";
@@ -128,6 +130,8 @@ namespace CourseWork.Parts
                 {
                     device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
                 }
+                device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
+                //_SoundInput = new WasapiLoopbackCapture();
                 _SoundInput = new WasapiCapture(device);
 
                 _SoundInput.DataAvailable += SoundSend;
@@ -162,6 +166,10 @@ namespace CourseWork.Parts
         {
             lock (SoundClienAddresses)
                 _ClientsAddress = remoteClients;
+            if (_ClientsAddress.Count != 0)
+                _Connected = true;
+            else
+                _Connected = false;
             //if (_ClientsAddress != null)
             //{
 
@@ -207,17 +215,22 @@ namespace CourseWork.Parts
         {
             try
             {
+                //_ConnectionToSend.Send(e.Buffer, address);
+
+                _BufferStream.AddSamples(e.Buffer, 0, e.Buffer.Length);
                 //Рассылаем всем подключенным клиентам
                 lock (SoundClienAddresses)
                     foreach (var address in _ClientsAddress)
                     {
                         _ConnectionToSend.Send(e.Buffer, address);
+                        //_BufferStream.AddSamples(e.Buffer, 0, e.Buffer.Length);
                     }
 
             }
             catch (Exception ex)
             {
-                throw ex;
+                _BufferStream.ClearBuffer();
+                //throw ex;
             }
         }
         //Прослушивание входящих подключений
@@ -229,28 +242,30 @@ namespace CourseWork.Parts
             //адрес, с которого пришли данные
             EndPoint remoteIp = new IPEndPoint(IPAddress.Any, 0);
             //бесконечный цикл
+            _Connected = MainControler._isSoundConnected;
             while (MainControler._options.isReceivingSound)
             {
                 //CheckSendConnections(MainControler.ConnectedRemoteClientsAddress);
-                _Connected = MainControler._isSoundConnected;
                 //_Connected = true;                
-                    while (_Connected)
+                while (_Connected)
+                {
+                    try
                     {
-                        try
-                        {
-                            //промежуточный буфер
-                            //byte[] data = new byte[65535];
-                            //получено данных
-                            IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                            byte[] buff = _ConnectionToReceive.Receive(ref iPEndPoint);
-                            //добавляем данные в буфер, откуда output будет воспроизводить звук
+                        //промежуточный буфер
+                        //byte[] data = new byte[65535];
+                        //получено данных
+                        IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                        byte[] buff = _ConnectionToReceive.Receive(ref iPEndPoint);
+                        //добавляем данные в буфер, откуда output будет воспроизводить звук
+                        if (buff != null)
                             _BufferStream.AddSamples(buff, 0, buff.Length);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw ex;
-                        }
-                    }                
+                    }
+                    catch (Exception ex)
+                    {
+                        _BufferStream.ClearBuffer();
+                        //throw ex;
+                    }
+                }
                 Thread.Sleep(100);
             }
             _SoundOutput.Stop();

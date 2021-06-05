@@ -119,7 +119,7 @@ namespace CourseWork.Parts
             _SoundDevices = SoundTransfer.GetDeviceNames();
             var enumerator = new MMDeviceEnumerator();
             defaultSysOutputSound = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia).ID;
-            defaultSysInputSound = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia).ID;
+            defaultSysInputSound = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia).ID;
             if (defaultInputSound == null) defaultInputSound = defaultSysInputSound;
             if (defaultOutputSound == null) defaultOutputSound = defaultSysOutputSound;
         }
@@ -143,7 +143,7 @@ namespace CourseWork.Parts
             {
                 if (wasapi.FriendlyName == devicename)
                 {
-                    defaultInputSound = wasapi.ID;
+                    defaultOutputSound = wasapi.ID;
                     break;
                 }
             }
@@ -195,10 +195,13 @@ namespace CourseWork.Parts
         public bool AddClient(IPEndPoint e)
         {
             try
-            {                
-                lock (Manipulator.remoteClientsAddressInUseLock)
-                    remoteClientsAddress.Add(e);
-                serializableClients.Add(e.ToString());
+            {
+                if (!remoteClientsAddress.Contains(e))
+                {
+                    lock (Manipulator.remoteClientsAddressInUseLock)
+                        remoteClientsAddress.Add(e);
+                    serializableClients.Add(e.ToString());
+                }
             }
             catch (Exception ex)
             {
@@ -220,9 +223,10 @@ namespace CourseWork.Parts
 
                 IPEndPoint iPEndPoint = new IPEndPoint(localAddr, Int32.Parse(port_));
                 if (remoteClientsAddress.Contains(iPEndPoint))
-                {
-                    lock (Manipulator.remoteClientsAddressInUseLock)
+                {                    
                     {
+                        Manipulator._currManipulator.RemoveRemoteTcp(iPEndPoint);
+                        
                         remoteClientsAddress.Remove(iPEndPoint);
                         serializableClients.Remove(iPEndPoint.ToString());
                     }

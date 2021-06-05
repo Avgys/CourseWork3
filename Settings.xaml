@@ -23,17 +23,18 @@
             <Button x:Name="Sound" Content="Sound" Height="28" Foreground="White" Background="#FF191919" Click="Sound_Click"/>
             <Button x:Name="DefalutPorts" Content="Network" Height="28" Foreground="White" Background="#FF191919" Click="DefalutPorts_Click"/>
         </StackPanel>
-        <Grid x:Name="ClientsGrid" Grid.Column="1" Grid.ColumnSpan="3" d:IsHidden="True">
+        <Grid x:Name="ClientsGrid" Grid.Column="1" Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="203*"/>
                 <ColumnDefinition Width="439*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="101.009"/>
-                <RowDefinition/>
+                <RowDefinition Height="139*"/>
+                <RowDefinition Height="143*"/>
             </Grid.RowDefinitions>
             <TextBox x:Name="IpAddress" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Width="158" Foreground="White" Background="#FF4B4B4B" Height="20"/>
-            <ListBox x:Name="ClientsAddresses" Background="#FF595959" Grid.ColumnSpan="2" Margin="0,1,0,0" Grid.Row="1" SelectionChanged="ClientsAddresses_SelectionChanged">
+            <ListBox x:Name="ClientsAddresses" Background="#FF595959" Grid.ColumnSpan="2" Margin="0,1,0,0" Grid.Row="1" SelectionChanged="ClientsAddresses_SelectionChanged" Foreground="White">
                 <ListBoxItem/>
             </ListBox>
             <Label Content="Ip Address" HorizontalAlignment="Left" Margin="22,10,0,0" VerticalAlignment="Top" Foreground="White" Height="26" Width="66"/>
@@ -41,11 +42,12 @@
             <Label Content="Port" Margin="37,10,335,66" Grid.Column="1" Foreground="White" Width="Auto"/>
             <TextBox x:Name="Port" Grid.Column="1" HorizontalAlignment="Left" Margin="37,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="134" Foreground="White" Background="#FF444444" Height="21"/>
             <Button x:Name="Remove" Content="Remove" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Remove_Click" Background="#FF464646" Foreground="White" Height="21" Width="52" Margin="261,0,0,0"/>
+            <ListBox x:Name="ConnectedAddress" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,2,0,0" Background="#FF494949" Foreground="White"/>
         </Grid>
         <Button x:Name="Cancel" HorizontalAlignment="Left" Margin="1,19,0,0" VerticalAlignment="Top" Height="22" Width="77" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="Cancel" Click="Cancel_Click" Foreground="White" Grid.Column="3"/>
         <Button x:Name="Ok" HorizontalAlignment="Center" Margin="0,19,0,0" VerticalAlignment="Top" Height="22" Width="76" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="OK" Click="Ok_Click" Foreground="White" Grid.Column="2"/>
         <Button x:Name="SaveSettings" HorizontalAlignment="Left" Margin="313,19,0,0" VerticalAlignment="Top" Height="22" Width="77" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="Save settings" Click="SaveSettings_Click" Foreground="White" Grid.Column="1"/>
-        <Grid x:Name="SoundGrid" Grid.Column="1" Grid.ColumnSpan="3">
+        <Grid x:Name="SoundGrid" Grid.Column="1" Grid.ColumnSpan="3" d:IsHidden="True">
             <ComboBox x:Name="RecordDevice" HorizontalAlignment="Left" Margin="29,40,0,0" VerticalAlignment="Top" Width="194" Height="26"/>
             <ComboBox x:Name="PlayDevice" HorizontalAlignment="Left" Margin="29,99,0,0" VerticalAlignment="Top" Width="194" Height="23"/>
             <Button x:Name="SetRecordDevice" Content="Set" HorizontalAlignment="Left" Margin="252,40,0,0" VerticalAlignment="Top" Height="26" Width="69" Click="SetRecordDevice_Click" Foreground="White" Background="#FF464646"/>

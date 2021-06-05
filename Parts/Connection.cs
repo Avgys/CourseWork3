@@ -27,8 +27,7 @@ namespace CourseWork.Parts
 
         public UdpConnection()
         {
-
-            client = new UdpClient(new IPEndPoint(Manipulator._currManipulator.localIP, 0));               
+            client = new UdpClient(new IPEndPoint(Manipulator._currManipulator.localIP, 0));
             
         }
 
@@ -39,6 +38,11 @@ namespace CourseWork.Parts
                 return client.Client.LocalEndPoint as IPEndPoint;
             }
         }
+
+            //public void Bind()
+            //{
+            //    client.bind
+            //}
 
         public void Connect(string input_ = "127.0.0.1", string port_ = "8888")
         {
@@ -81,10 +85,30 @@ namespace CourseWork.Parts
 
         public byte[] Receive(ref IPEndPoint iPEndPoint)
         {
-            byte[] buff;
+            byte[] buff = null;
             try
             {
-                buff = client.Receive(ref iPEndPoint);
+                //var timeToWait = TimeSpan.FromSeconds(1);
+                var asyncResult = client.BeginReceive(null, null);
+                asyncResult.AsyncWaitHandle.WaitOne(1000);
+
+                if (asyncResult.IsCompleted)
+                {
+                    try
+                    {
+                        IPEndPoint remoteEP = null;
+                        buff = client.EndReceive(asyncResult, ref remoteEP);
+                        // EndReceive worked and we have received data and remote endpoint
+                    }
+                    catch (Exception ex)
+                    {
+                        // EndReceive failed and we ended up here
+                    }
+                }
+                else
+                {
+                    // The operation wasn't completed before the timeout and we're off the hook
+                }
             }
             catch (Exception ex)
             {
@@ -122,8 +146,8 @@ namespace CourseWork.Parts
         public IPEndPoint IPEndPoint
         {
             get
-            {
-                return _Client?.Client?.RemoteEndPoint as IPEndPoint;
+            {                
+                return (_Client.Client?.RemoteEndPoint as IPEndPoint);
             }
         }
         public bool isClientConnected
@@ -138,7 +162,7 @@ namespace CourseWork.Parts
 
         public TcpConnection()
         {
-            _Client = new TcpClient();
+            _Client = new TcpClient(AddressFamily.InterNetwork);
 
         }
 
@@ -186,9 +210,9 @@ namespace CourseWork.Parts
         {
             try
             {
-                var result = _Client.BeginConnect(endPoint.Address, endPoint.Port, null, null);
+                var result = _Client.BeginConnect(endPoint.Address.MapToIPv4(), endPoint.Port, null, null);
 
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(5));
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(300));
 
                 if (!success)
                 {

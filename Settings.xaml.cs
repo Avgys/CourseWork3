@@ -46,17 +46,15 @@ namespace CourseWork
             if (Manipulator._currManipulator._options != null)
             {
                 ClientsAddresses.Items.Clear();
-                List<ConnectionInfo> ConnectedClients = new ();
-                foreach (var e in Manipulator._currManipulator.ConnectedRemoteClientsAddress)
+                ConnectedAddress.Items.Clear();
+                List<ConnectionInfo> ConnectedClients = Manipulator._currManipulator.ConnectedRemoteClientsAddress.ToList();
+                for (int i = 0; i < Manipulator._currManipulator._options.remoteClientsAddress.Count; i++)
                 {
-                    ConnectedClients.Add(new (e.RemoteClient));
+                    ClientsAddresses.Items.Add(Manipulator._currManipulator._options.remoteClientsAddress[i].ToString());                       
                 }
-                for (int i = 0; i < Manipulator._currManipulator._options.serializableClients.Count; i++)
+                foreach (var e in ConnectedClients)
                 {
-                    bool flag = false;
-                    if (ConnectedClients.Exists(x => x.RemoteClient.IPEndPoint == Manipulator._currManipulator._options.remoteClientsAddress[i]))
-                        flag = true;
-                    ClientsAddresses.Items.Add(Manipulator._currManipulator._options.serializableClients[i] + " " + flag.ToString());
+                    ConnectedAddress.Items.Add(e.RemoteClient.IPEndPoint.ToString() + " " + (e.Sound == null ? "sound" : "null"));
                 }
             }
         }
@@ -115,10 +113,11 @@ namespace CourseWork
             //IPEndPoint temp;
             //e.AddedItems;
 
-            if (e.AddedItems.Count >= 1) {
+            if (e.AddedItems.Count >= 1)
+            {
                 IpAddress.Text = Manipulator._currManipulator._options.remoteClientsAddress[ClientsAddresses.SelectedIndex].Address.ToString();
                 Port.Text = Manipulator._currManipulator._options.remoteClientsAddress[ClientsAddresses.SelectedIndex].Port.ToString();
-            }   
+            }
         }
 
         private void Clients_Click(object sender, RoutedEventArgs e)
@@ -158,7 +157,7 @@ namespace CourseWork
 
                 SendSound.IsChecked = Manipulator._currManipulator._options.isSendingSound;
                 ReceiveSound.IsChecked = Manipulator._currManipulator._options.isReceivingSound;
-                 
+
             }
         }
 
@@ -216,7 +215,7 @@ namespace CourseWork
         {
             var options = Manipulator._currManipulator._options;
             if (options.isContainsClient(IpAddress.Text, Port.Text))
-               options.RemoveClient(IpAddress.Text, Port.Text);
+                options.RemoveClient(IpAddress.Text, Port.Text);
             ResetClientGrid();
         }
 
