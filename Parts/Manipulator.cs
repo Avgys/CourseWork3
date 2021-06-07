@@ -38,7 +38,7 @@ namespace CourseWork.Parts
         public Options _options;
         SoundTransfer _sound;
         //FileTransfer _fileTransfer;
-        EventController _eventControler;
+        public EventController _eventControler;
 
         TcpConnection _MainListener;
 
@@ -71,7 +71,7 @@ namespace CourseWork.Parts
 
         public Manipulator()
         {
-            
+
             _currManipulator = this;
             SubnetMask = GetSubnetMask();
             _PCid = localIP.GetAddressBytes()[3];
@@ -103,8 +103,8 @@ namespace CourseWork.Parts
             sendMessages.Start();
 
             //_fileTransfer = new FileTransfer();
-            //_eventControler = new EventController();
-            //_eventControler._changeScreen += ChangeScreen;
+            _eventControler = new EventController();
+            _eventControler._changeScreen += ChangeScreen;
 
             //firstCheck = new Thread(new ThreadStart(CheckSubNet));
             //firstCheck.Name = "sendMessages";
@@ -117,11 +117,11 @@ namespace CourseWork.Parts
             {
                 var list = ConnectedRemoteClientsAddress.ToList();
                 ConnectedRemoteClientsAddress.RemoveAll(x => e == x.RemoteClient.IPEndPoint);
-                foreach(var n in list)
+                foreach (var n in list)
                 {
                     n.RemoteClient.Close();
                 }
-                
+
             }
             CheckSoundClients();
         }
@@ -192,6 +192,7 @@ namespace CourseWork.Parts
         public void Close()
         {
             SaveSettings();
+            _eventControler.Close();
             _options._isAcceptable = false;
             _options._isTryingConnect = false;
             _isRecevingMessages = false;
@@ -230,64 +231,42 @@ namespace CourseWork.Parts
 
         private enum Commands
         {
-            SET = 0x1,
+            SEND = 0x1,
             UNSET = 0x2,
             MainTCP = 0x4,
             SoundConnection = 0x8,
             EventConnection = 0x10,
             FileTranferConnection = 0x20,
-            ACCEPT = 0x40
+            GET = 0x40
         }
 
-        private bool SendCommand(Commands command, NetworkStream client)
+        private bool SendCommand(Commands command, ConnectionInfo client)
         {
             string endPoint = "";
             Commands neutral = (Commands)188;
-            switch (command & neutral)
-            {
-                case Commands.MainTCP:
-                    {
-                        break;
-                    }
-                case Commands.SoundConnection:
-                    {
-                        if ((command & Commands.SET) == Commands.SET)
+            if ((command & Commands.SEND) == Commands.SEND)
+                switch (command & neutral)
+                {
+                    case Commands.MainTCP:
+                        {
+                            break;
+                        }
+                    case Commands.SoundConnection:
                         {
                             endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                            break;
                         }
-                        else
+                    case Commands.EventConnection:
                         {
-                            if ((command & Commands.UNSET) == Commands.UNSET)
-                            {
-
-                            }
+                            endPoint = _eventControler.ConnectionToReceive.IPEndPoint.ToString();
+                            break;
                         }
-                        break;
-                    }
-                case Commands.EventConnection:
-                    {
-                        if ((command & Commands.SET) == Commands.SET)
+                    case Commands.FileTranferConnection:
                         {
-                            endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                            //string endPoint = FileTranferConnection._ConnectionToReceive.IPEndPoint.ToString();                            
+                            break;
                         }
-                        else
-                        {
-                            if ((command & Commands.UNSET) == Commands.UNSET)
-                            {
-
-                            }
-                        }
-                        break;
-                    }
-                case Commands.FileTranferConnection:
-                    {
-                        if ((command & Commands.SET) != 0)
-                        {
-                            //string endPoint = FileTranferConnection._ConnectionToReceive.IPEndPoint.ToString();
-                        }
-                        break;
-                    }
-            }
+                }
 
 
             List<byte> buff = new();
@@ -295,25 +274,25 @@ namespace CourseWork.Parts
             int bytesLength = 0;
             bytesLength += 2;
 
-            if ((command & Commands.SET) != 0)
+            if ((command & Commands.SEND) == Commands.SEND)
                 bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
 
             buff.Add((byte)bytesLength);
 
             buff.Add((byte)command);
 
-            if ((command & Commands.SET) != 0)
+            if ((command & Commands.SEND) == Commands.SEND)
                 buff.AddRange(Encoding.UTF8.GetBytes(endPoint));
+
             try
             {
                 var arr = buff.ToArray();
-                client.Write(arr, 0, bytesLength);
+                client.RemoteClient._Client.GetStream().Write(arr, 0, bytesLength);
                 return true;
             }
             catch
             {
-                //RemoveRemoteTcp(client.Socket.RemoteEndPoint as IPEndPoint);
-                client.Close();
+                RemoveRemoteTcp(client.RemoteClient.IPEndPoint);
                 return false;
             }
             buff.Clear();
@@ -321,7 +300,7 @@ namespace CourseWork.Parts
 
         }
 
-        private async void ProcessCommand(byte[] buff, ConnectionInfo client, int bytesRead)
+        private void ProcessCommand(byte[] buff, ConnectionInfo client, int bytesRead)
         {
             Commands command = (Commands)buff[1];
             Commands neutral = (Commands)188;
@@ -333,30 +312,52 @@ namespace CourseWork.Parts
                     }
                 case Commands.SoundConnection:
                     {
-                        if ((command & Commands.SET) == Commands.SET)
+                        if ((command & Commands.SEND) == Commands.SEND)
                         {
                             int headerLength = buff[0];
-                            byte[] IpBuff = new byte[bytesRead - 2];
-                            Array.Copy(buff, 2, IpBuff, 0, bytesRead - 2);
+                            byte[] IpBuff = new byte[headerLength - 2];
+                            Array.Copy(buff, 2, IpBuff, 0, headerLength - 2);
                             //buff.CopyTo(IpBuff, 2,);
                             IPEndPoint iPEnd;
                             if (IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
                             {
                                 client.Sound = iPEnd;
-                                //ConnectedRemoteClientsAddress.Find(x => x.RemoteClient == client.tcpInfo.IPEndPoint).Sound = iPEnd;
                                 CheckSoundClients();
-                                //if (!ConnectedRemoteClientsAddress.Exists(x => x.Sound == iPEnd))
-                                //{
+                            }
+                        }
+                        else if (((command & Commands.GET) == Commands.GET))
+                        {
+                            Commands newCommand = Commands.SEND | Commands.SoundConnection;
 
-                                //}
-                                //if (!_sound._ClientsAddress.Contains(iPEnd))
-                                //    _sound._ClientsAddress.Add(iPEnd);
+                            if (!SendCommand(newCommand, client))
+                            {
+                                client.RemoteClient.Close();
                             }
                         }
                         break;
                     }
                 case Commands.EventConnection:
                     {
+                        if ((command & Commands.SEND) == Commands.SEND)
+                        {
+                            int headerLength = buff[0];
+                            byte[] IpBuff = new byte[headerLength - 2];
+                            Array.Copy(buff, 2, IpBuff, 0, headerLength - 2);
+                            IPEndPoint iPEnd;
+                            if (IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
+                            {
+                                client.Event = iPEnd;
+                            }
+                        }
+                        else if (((command & Commands.GET) == Commands.GET))
+                        {
+                            Commands newCommand = Commands.SEND | Commands.EventConnection;
+
+                            if (!SendCommand(newCommand, client))
+                            {
+                                client.RemoteClient.Close();
+                            }
+                        }
                         break;
                     }
                 case Commands.FileTranferConnection:
@@ -406,42 +407,67 @@ namespace CourseWork.Parts
             while (_isSendingMessages)
             {
                 var list = ConnectedRemoteClientsAddress.ToList();
-                    foreach (var client in list)
+                foreach (var client in list)
+                {
+                    if (client.RemoteClient.isClientConnected)
                     {
-                        if (client.RemoteClient.isClientConnected && client.Sound == null)
+                        //string str = "message";
+                        if (client.Sound == null)
                         {
-                            //string str = "message";
-                            Commands command = Commands.SET | Commands.SoundConnection;
+                            Commands command = Commands.GET | Commands.SoundConnection;
 
-                            if (!SendCommand(command, client.RemoteClient._Client.GetStream()))
+                            if (!SendCommand(command, client))
                             {
                                 client.RemoteClient.Close();
                             }
                         }
 
-                        //byte[] buff = new byte[2048];
-                        //Array.Clear(buff, 0, buff.Length);                    
+                        if (client.Event == null)
+                        {
+                            Commands command = Commands.GET | Commands.EventConnection;
 
-                        //SendCommand(command, client);
+                            if (!SendCommand(command, client))
+                            {
+                                client.RemoteClient.Close();
+                            }
+                        }
 
-                        //buff.Append<byte>((byte)command);
-                        //bytesLength++;
-                        //string endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
-                        //bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
-                        //buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
-
-                        //foreach (var byteBuff in address.Address.GetAddressBytes())
+                        //if (client.File == null)
                         //{
-                        //    buff.Append<byte>(byteBuff);
-                        //    bytesLength++;
+                        //    Commands command = Commands.GET | Commands.EventConnection;
+
+                        //    if (!SendCommand(command, client))
+                        //    {
+                        //        client.RemoteClient.Close();
+                        //    }
                         //}
 
-                        //buff.Append<byte>(address.Port);
 
-                        //client.Stream.Write(buff, 0, bytesLength);
-                        //Array.Clear(buff, 0, buff.Length);
-                        //client.Stream.Read(buff, 0, buff.Length);
                     }
+
+                    //byte[] buff = new byte[2048];
+                    //Array.Clear(buff, 0, buff.Length);                    
+
+                    //SendCommand(command, client);
+
+                    //buff.Append<byte>((byte)command);
+                    //bytesLength++;
+                    //string endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
+                    //bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
+                    //buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
+
+                    //foreach (var byteBuff in address.Address.GetAddressBytes())
+                    //{
+                    //    buff.Append<byte>(byteBuff);
+                    //    bytesLength++;
+                    //}
+
+                    //buff.Append<byte>(address.Port);
+
+                    //client.Stream.Write(buff, 0, bytesLength);
+                    //Array.Clear(buff, 0, buff.Length);
+                    //client.Stream.Read(buff, 0, buff.Length);
+                }
                 Thread.Sleep(100);
             }
         }
@@ -488,8 +514,8 @@ namespace CourseWork.Parts
                 else
                 {
                     //_MainListener.Connect()k
-                    
-                        TcpClient temp = _MainListener.AcceptClient();
+
+                    TcpClient temp = _MainListener.AcceptClient();
                     if (!ConnectedRemoteClientsAddress.Exists(x => x.RemoteClient.IPEndPoint?.Address.Equals((temp.Client.RemoteEndPoint as IPEndPoint).Address) ?? false))
                     {
                         TcpConnection tcpConnection = new TcpConnection(temp);
@@ -508,7 +534,7 @@ namespace CourseWork.Parts
                     else
                     {
                         temp.Close();
-                    }                    
+                    }
                 }
                 CheckIsConnectionActive();
             }
@@ -662,7 +688,27 @@ namespace CourseWork.Parts
 
         public void ChangeScreen(ScreenEdges side)
         {
-
+            switch (side)
+            {
+                case ScreenEdges.LEFT:
+                    {
+                        if (ConnectedRemoteClientsAddress.Count != 0)
+                            _eventControler.currRemoteIP = ConnectedRemoteClientsAddress[0]?.Event ?? null;
+                        break;
+                    }
+                case ScreenEdges.UP:
+                    {
+                        break;
+                    }
+                case ScreenEdges.RIGHT:
+                    {
+                        break;
+                    }
+                case ScreenEdges.DOWN:
+                    {
+                        break;
+                    }
+            }
         }
     }
 }

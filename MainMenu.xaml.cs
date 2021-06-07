@@ -29,8 +29,7 @@ namespace CourseWork
             InitializeComponent();
 
             manipulator = new Manipulator();
-
-            //control.changeScreen += ChangeWindowToMask;
+            manipulator._eventControler._changeScreen += ChangeWindowToMask;
 
             _SettingWindow = new Settings();
 
@@ -83,11 +82,11 @@ namespace CourseWork
 
         private void ChangeWindowToMask(ScreenEdges flag)
         {
-            //Dispatcher.Invoke(() =>
-            //{
-            //    this.Hide();
-            //    _WindowMask.Show();
-            //});
+            Dispatcher.Invoke(() =>
+            {
+                HideOtherWindows(null,null);
+                _WindowMask.Show();
+            });
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

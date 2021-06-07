@@ -28,7 +28,7 @@ namespace CourseWork.Parts
         public UdpConnection()
         {
             client = new UdpClient(new IPEndPoint(Manipulator._currManipulator.localIP, 0));
-            
+
         }
 
         public IPEndPoint IPEndPoint
@@ -39,10 +39,10 @@ namespace CourseWork.Parts
             }
         }
 
-            //public void Bind()
-            //{
-            //    client.bind
-            //}
+        //public void Bind()
+        //{
+        //    client.bind
+        //}
 
         public void Connect(string input_ = "127.0.0.1", string port_ = "8888")
         {
@@ -85,19 +85,19 @@ namespace CourseWork.Parts
 
         public byte[] Receive(ref IPEndPoint iPEndPoint)
         {
-            byte[] buff = null;
+            List<byte> buff = new List<byte>();
             try
             {
                 //var timeToWait = TimeSpan.FromSeconds(1);
                 var asyncResult = client.BeginReceive(null, null);
-                asyncResult.AsyncWaitHandle.WaitOne(1000);
+                asyncResult.AsyncWaitHandle.WaitOne(50);
 
                 if (asyncResult.IsCompleted)
                 {
                     try
                     {
                         IPEndPoint remoteEP = null;
-                        buff = client.EndReceive(asyncResult, ref remoteEP);
+                        buff = new List<byte>(client.EndReceive(asyncResult, ref remoteEP));
                         // EndReceive worked and we have received data and remote endpoint
                     }
                     catch (Exception ex)
@@ -109,6 +109,23 @@ namespace CourseWork.Parts
                 {
                     // The operation wasn't completed before the timeout and we're off the hook
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return buff.ToArray();
+        }
+
+
+        public byte[] ReceiveDirect(ref IPEndPoint iPEndPoint)
+        {
+            byte[] buff;
+            try
+            {
+                buff = client.Receive(ref iPEndPoint);
+
+               
             }
             catch (Exception ex)
             {
@@ -141,12 +158,12 @@ namespace CourseWork.Parts
 
     public class TcpConnection
     {
-       public TcpClient _Client;
+        public TcpClient _Client;
 
         public IPEndPoint IPEndPoint
         {
             get
-            {                
+            {
                 return (_Client.Client?.RemoteEndPoint as IPEndPoint);
             }
         }

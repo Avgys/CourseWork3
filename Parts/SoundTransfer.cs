@@ -75,14 +75,15 @@ namespace CourseWork.Parts
             //создаем поток для прослушивания
             _ClientsAddress = new();
             _ConnectionToReceive = new UdpConnection();
-            if (mainControler._options.isSendingSound)
-            {
-                Activate(DataFlow.Capture);
-            }
             if (mainControler._options.isReceivingSound)
             {
                 Activate(DataFlow.Render);
             }
+            if (mainControler._options.isSendingSound)
+            {
+                Activate(DataFlow.Capture);
+            }
+            
         }
 
 
@@ -103,8 +104,8 @@ namespace CourseWork.Parts
                 {
                     device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
                 }
-                device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
-                _SoundOutput = new WasapiOut(device, AudioClientShareMode.Shared, false, 300);
+                //device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
+                _SoundOutput = new WasapiOut(device, AudioClientShareMode.Shared, true, 100);
                 
                 //создаем поток для буферного потока и определяем у него такой же формат как и потока с микрофона
                 _BufferStream = new BufferedWaveProvider(_SoundOutput.OutputWaveFormat);
@@ -130,9 +131,10 @@ namespace CourseWork.Parts
                 {
                     device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
                 }
-                device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
-                //_SoundInput = new WasapiLoopbackCapture();
-                _SoundInput = new WasapiCapture(device);
+                //device = enumerator.GetDefaultAudioEndpoint(flow, Role.Multimedia);
+                _SoundInput = new WasapiLoopbackCapture();
+                //_SoundInput = new WasapiCapture(device);
+                //_SoundInput.WaveFormat = _BufferStream.WaveFormat;
 
                 _SoundInput.DataAvailable += SoundSend;
                 StartRecord();
@@ -217,19 +219,25 @@ namespace CourseWork.Parts
             {
                 //_ConnectionToSend.Send(e.Buffer, address);
 
-                _BufferStream.AddSamples(e.Buffer, 0, e.Buffer.Length);
+                //_BufferStream.AddSamples(e.Buffer, 0, e.BytesRecorded);
                 //Рассылаем всем подключенным клиентам
-                lock (SoundClienAddresses)
-                    foreach (var address in _ClientsAddress)
+                var list = _ClientsAddress.ToList();
+                
+                if (list.Count > 0)
+                {
+                    byte[] buff = new byte[e.BytesRecorded];
+                    Array.Copy(e.Buffer, buff, e.BytesRecorded);
+
+                    foreach (var address in list)
                     {
-                        _ConnectionToSend.Send(e.Buffer, address);
+                        _ConnectionToSend.Send(buff, address);
                         //_BufferStream.AddSamples(e.Buffer, 0, e.Buffer.Length);
                     }
-
+                }
             }
             catch (Exception ex)
             {
-                _BufferStream.ClearBuffer();
+                //_BufferStream.ClearBuffer();
                 //throw ex;
             }
         }
@@ -255,9 +263,9 @@ namespace CourseWork.Parts
                         //byte[] data = new byte[65535];
                         //получено данных
                         IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                        byte[] buff = _ConnectionToReceive.Receive(ref iPEndPoint);
+                        byte[] buff = _ConnectionToReceive.ReceiveDirect(ref iPEndPoint);
                         //добавляем данные в буфер, откуда output будет воспроизводить звук
-                        if (buff != null)
+                        if (buff != null && buff.Length > 0)
                             _BufferStream.AddSamples(buff, 0, buff.Length);
                     }
                     catch (Exception ex)

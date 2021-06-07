@@ -27,6 +27,12 @@ namespace CourseWork.Parts
         WM_SYSKEYUP = 0x105
     }
 
+    public struct QueueKey
+    {
+        public Keys key;
+        public KeyStates state;
+    }
+
     public static class KeyboardHook
     {
 
@@ -68,12 +74,14 @@ namespace CourseWork.Parts
 
         static public List<QueueKey> getInputQueue()
         {
+            if (_InputKeyQueue == null)
+                return null;
             bool acquiredLock = false;
             List<QueueKey> buff = null;
             try
             {
-                Monitor.Enter(InputQueuelocker, ref acquiredLock);
-                if(_InputKeyQueue.Count > 4)
+                Monitor.Enter(InputQueuelocker, ref acquiredLock);                
+                if (_InputKeyQueue.Count > 4)
                 {
                     _InputKeyQueue.RemoveRange(0, _InputKeyQueue.Count - 4);
                 }
@@ -98,11 +106,7 @@ namespace CourseWork.Parts
 
         static public List<Keys> HookedKeys = new List<Keys>();
 
-        public struct QueueKey
-        {
-            public Keys key;
-            public KeyStates state;
-        }
+        
 
         private struct KBHookStruct
         {
@@ -220,6 +224,19 @@ namespace CourseWork.Parts
             WM_RBUTTONUP = 0x0205
         }
 
+        [Flags]
+        public enum MouseEventFlags
+        {
+            LEFTDOWN = 0x0002,
+            LEFTUP = 0x0004,
+            MIDDLEDOWN = 0x0020,
+            MIDDLEUP = 0x0040,
+            MOVE = 0x0001,
+            ABSOLUTE = 0x8000,
+            RIGHTDOWN = 0x0008,
+            RIGHTUP = 0x0010
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT
         {
@@ -326,18 +343,7 @@ namespace CourseWork.Parts
         [DllImport("User32.dll")]
         static extern int ShowCursor(bool bShow);
 
-        [Flags]
-        public enum MouseEventFlags
-        {
-            LEFTDOWN = 0x0002,
-            LEFTUP = 0x0004,
-            MIDDLEDOWN = 0x0020,
-            MIDDLEUP = 0x0040,
-            MOVE = 0x0001,
-            ABSOLUTE = 0x8000,
-            RIGHTDOWN = 0x0008,
-            RIGHTUP = 0x0010
-        }
+        
 
         public void Clip()
         {

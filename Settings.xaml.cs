@@ -54,7 +54,8 @@ namespace CourseWork
                 }
                 foreach (var e in ConnectedClients)
                 {
-                    ConnectedAddress.Items.Add(e.RemoteClient.IPEndPoint.ToString() + " " + (e.Sound != null ? e.Sound.Port.ToString() : "null") 
+                    ConnectedAddress.Items.Add((e.RemoteClient.IPEndPoint != null ? e.RemoteClient.IPEndPoint.ToString() : "null") + " " 
+                        + (e.Sound != null ? e.Sound.Port.ToString() : "null") 
                         +" " + (e.Event != null ? e.Event.Port.ToString() : "null"));
                 }
             }
