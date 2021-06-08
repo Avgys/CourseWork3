@@ -110,11 +110,7 @@ namespace CourseWork.Parts
             lock (ConnectedRemoteLock)
             {
                 var list = ConnectedRemoteClientsAddress.ToList();
-                ConnectedRemoteClientsAddress.RemoveAll(x => e == x.RemoteClient.IPEndPoint);
-                //foreach (var n in list)
-                //{
-                //    n.RemoteClient.Close();
-                //}
+                ConnectedRemoteClientsAddress.RemoveAll(x => e == x.RemoteClient.IPEndPoint);           
             }
             CheckSoundClients();
         }        
@@ -419,7 +415,6 @@ namespace CourseWork.Parts
 
             byte[] buffer = new byte[1024];
             int timeout = 1;
-            bool firstTime = true;
             do
             {
                 CheckIsConnectionActive();

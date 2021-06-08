@@ -9,18 +9,6 @@ using System.Net;
 
 namespace CourseWork.Parts
 {
-
-    //public class Connection
-    //{
-    //    public virtual void Connect(string input = "localhost", int port = 8888)
-    //    {
-    //    }
-
-    //    public virtual void Listen(int count)
-    //    {
-    //    }
-    //}
-
     public class UdpConnection
     {
         public UdpClient client;
@@ -38,11 +26,6 @@ namespace CourseWork.Parts
                 return client.Client.LocalEndPoint as IPEndPoint;
             }
         }
-
-        //public void Bind()
-        //{
-        //    client.bind
-        //}
 
         public void Connect(string input_ = "127.0.0.1", string port_ = "8888")
         {
@@ -90,7 +73,7 @@ namespace CourseWork.Parts
             {
                 //var timeToWait = TimeSpan.FromSeconds(1);
                 var asyncResult = client.BeginReceive(null, null);
-                asyncResult.AsyncWaitHandle.WaitOne(50);
+                asyncResult.AsyncWaitHandle.WaitOne(100);
 
                 if (asyncResult.IsCompleted)
                 {
@@ -140,20 +123,6 @@ namespace CourseWork.Parts
             client.Close();
             client.Dispose();
         }
-
-        //public void Listen(IPEndPoint iPEndPoint)
-        //{
-        //    try
-        //    {
-        //        //IPAddress localAddr = IPAddress.Parse(input);
-        //        //IPEndPoint iPEndPoint = new IPEndPoint(localAddr, port);
-        //        client.Receive(ref iPEndPoint);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
     }
 
     public class TcpConnection

@@ -88,7 +88,7 @@ namespace CourseWork.Parts
             while (_isRemoteCheckingInput)
             {
                 IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                byte[] buff = ConnectionToReceive.ReceiveDirect(ref iPEndPoint);
+                byte[] buff = ConnectionToReceive.Receive(ref iPEndPoint);
                 if (buff != null && buff.Length > 0)
                 {
                     List<byte> n = new List<byte>(buff);
