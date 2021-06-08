@@ -33,31 +33,25 @@ namespace CourseWork.Parts
         public KeyStates state;
     }
 
-    public static class KeyboardHook
+    public static class KeyboardControl
     {
 
         [DllImport("user32.dll")]
-        private static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
+        public static extern void keybd_event(byte bVk, byte bScan, int dwFlags, int dwExtraInfo);
 
         private const int KEYEVENTF_EXTENDEDKEY = 1;
-        private const int KEYEVENTF_KEYUP = 2;
-
-        
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        public static extern bool BlockInput([In, MarshalAs(UnmanagedType.Bool)] bool fBlockIt);
-
-        //public static Mutex _KeyHookMutex = new Mutex();
+        private const int KEYEVENTF_KEYUP = 2;        
 
         static object InputQueuelocker = new object();
 
         static public bool _isCheckingInput { get; set; }
 
+        static public EventController _Owner;
+
         static public void Start()
         {
+           
             _hookID = SetHook(_proc);
-            _InputKeyQueue = new List<QueueKey>();
             Application.Run();
         }
 
@@ -70,52 +64,14 @@ namespace CourseWork.Parts
         {
             UnhookWindowsHookEx(_hookID);
             Application.Exit();
-        }
-
-        static public List<QueueKey> getInputQueue()
-        {
-            if (_InputKeyQueue == null)
-                return null;
-            bool acquiredLock = false;
-            List<QueueKey> buff = null;
-            try
-            {
-                Monitor.Enter(InputQueuelocker, ref acquiredLock);                
-                if (_InputKeyQueue.Count > 4)
-                {
-                    _InputKeyQueue.RemoveRange(0, _InputKeyQueue.Count - 4);
-                }
-                buff = _InputKeyQueue;
-                _InputKeyQueue = new List<QueueKey>();
-            }
-            finally
-            {
-                if (acquiredLock) Monitor.Exit(InputQueuelocker);
-            }
-            return buff;
-        }
-
+        }       
 
         private const int WH_KEYBOARD_LL = 13;
         //private const int WH_KEYBOARD = 2;
-
-        
+        //
         private static LowLevelKeyboardProc _proc = HookCallback;
         private static IntPtr _hookID = IntPtr.Zero;
-        private static List<QueueKey> _InputKeyQueue;
-
-        static public List<Keys> HookedKeys = new List<Keys>();
-
-        
-
-        private struct KBHookStruct
-        {
-            public int vkCode;
-            public int scanCode;
-            public int flags;
-            public int time;
-            public int dwExtraInfo;
-        }
+        public static QueueKey _InputKeyQueue;     
 
         private static IntPtr SetHook(LowLevelKeyboardProc proc)
         {
@@ -126,6 +82,15 @@ namespace CourseWork.Parts
             }
         }
 
+        public struct KBHookStruct
+        {
+            public int vkCode;
+            public int scanCode;
+            public int flags;
+            public int time;
+            public int dwExtraInfo;
+        }
+
         private delegate IntPtr LowLevelKeyboardProc(int nCode, int wParam, KBHookStruct lParam);
 
         private static IntPtr HookCallback(int nCode, int wParam, KBHookStruct lParam)
@@ -133,15 +98,9 @@ namespace CourseWork.Parts
                         
             bool blnEat = false;
 
-            if (nCode >= 0)
+             if (nCode >= 0)
             {
-                //Keys vkCode = (Keys)lParam.vkCode;
-                QueueKey key = new QueueKey()
-                {
-                    key = (Keys)lParam.vkCode,
-                    state = (KeyStates)wParam
-                };
-                _InputKeyQueue.Add(key);
+                _Owner.SendKeyboardEvent((Keys)lParam.vkCode, (KeyStates)wParam);                
             }
 
             switch (wParam)
@@ -152,8 +111,8 @@ namespace CourseWork.Parts
                 case 261:
                     //Alt+Tab, Alt+Esc, Ctrl+Esc, Windows Key,
                     blnEat =
-                            //((lParam.vkCode == 9) && (lParam.flags == 32))
-                            /*|*/ ((lParam.vkCode == 27) && (lParam.flags == 32))
+                            ((lParam.vkCode == 9) && (lParam.flags == 32))
+                            | ((lParam.vkCode == 27) && (lParam.flags == 32))
                             | ((lParam.vkCode == 27) && (lParam.flags == 0))
                             | ((lParam.vkCode == 91) && (lParam.flags == 1))
                             | ((lParam.vkCode == 92) && (lParam.flags == 1))
@@ -188,17 +147,66 @@ namespace CourseWork.Parts
         private static extern IntPtr GetModuleHandle(string lpModuleName);
     }
 
-    public class MouseHook
+    [Flags]
+    public enum MouseEventFlags
     {
+        LEFTDOWN = 0x0002,
+        LEFTUP = 0x0004,
+        MIDDLEDOWN = 0x0020,
+        MIDDLEUP = 0x0040,
+        WHEEl = 0x0800,
+        MOVE = 0x0001,
+        ABSOLUTE = 0x8000,
+        RIGHTDOWN = 0x0008,
+        RIGHTUP = 0x0010
+    }
+
+    [Flags]
+    public enum MouseMessages
+    {
+        WM_LBUTTONDOWN = 0x0201,
+        WM_LBUTTONUP = 0x0202,
+        WM_MOUSEMOVE = 0x0200,
+        WM_MOUSEWHEEL = 0x020A,
+        WM_MOUSEWHEELUp = 520,
+        WM_MOUSEWHEELDOWN = 519,
+        WM_RBUTTONDOWN = 0x0204,
+        WM_RBUTTONUP = 0x0205
+    }
+
+    //[StructLayout(LayoutKind.Sequential)]
+    //public struct POINT
+    //{
+    //    public int X;
+    //    public int Y;
+    //}
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MSLLHOOKSTRUCT
+    {
+        public int X;
+        public int Y;
+        public int mouseData;
+        public uint flags;
+        public uint time;
+        public uint dwExtraInfo;
+    }
+
+
+    public static class MouseControl
+    {
+        public static EventController _Owner;
+
         private static LowLevelMouseProc _proc = HookCallback;
         private static IntPtr _hookID = IntPtr.Zero;
-        private static List<MSLLHOOKSTRUCT> _InputMouseQueue;
+        private static MSLLHOOKSTRUCT _InputMouse;
         private const int WH_MOUSE_LL = 14;
 
-        public MouseHook()
-        {
-            _InputMouseQueue = new List<MSLLHOOKSTRUCT>();
-        }
+        //[System.Runtime.InteropServices.DllImport("user32.dll")]
+        //public static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
+
+        [DllImport("User32.dll")]
+        static public extern void mouse_event(MouseEventFlags dwFlags, int dx, int dy, int dwData, uint dwExtraInfo);
 
 
         static public void Start()
@@ -213,46 +221,6 @@ namespace CourseWork.Parts
             Application.Exit();
         }
 
-        [Flags]
-        private enum MouseMessages
-        {
-            WM_LBUTTONDOWN = 0x0201,
-            WM_LBUTTONUP = 0x0202,
-            WM_MOUSEMOVE = 0x0200,
-            WM_MOUSEWHEEL = 0x020A,
-            WM_RBUTTONDOWN = 0x0204,
-            WM_RBUTTONUP = 0x0205
-        }
-
-        [Flags]
-        public enum MouseEventFlags
-        {
-            LEFTDOWN = 0x0002,
-            LEFTUP = 0x0004,
-            MIDDLEDOWN = 0x0020,
-            MIDDLEUP = 0x0040,
-            MOVE = 0x0001,
-            ABSOLUTE = 0x8000,
-            RIGHTDOWN = 0x0008,
-            RIGHTUP = 0x0010
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct MSLLHOOKSTRUCT
-        {
-            public POINT PT;
-            public uint mouseData;
-            public uint flags;
-            public uint time;
-            public IntPtr dwExtraInfo;
-        }
 
         private static IntPtr SetHook(LowLevelMouseProc proc)
         {
@@ -267,11 +235,10 @@ namespace CourseWork.Parts
 
         private static IntPtr HookCallback(int nCode, int wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && MouseMessages.WM_LBUTTONDOWN == (MouseMessages)wParam)
+            if (nCode >= 0)
             {
-                MSLLHOOKSTRUCT hookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
-
-                //MessageBox.Show(hookStruct.PT.X + ", " + hookStruct.PT.Y);
+                _InputMouse = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+                _Owner.SendMouseEvent((MouseMessages)wParam, _InputMouse);
             }
             return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
@@ -289,120 +256,5 @@ namespace CourseWork.Parts
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
-    }
-
-    public class MouseControl
-    {
-
-        public MouseControl()
-        {
-        }
-
-        public void getInput()
-        {
-
-        }
-
-        public ScreenEdges isMouseTouchScreenEdge()
-        {
-            int width = Screen.PrimaryScreen.Bounds.Size.Width;
-            int height = Screen.PrimaryScreen.Bounds.Size.Height;
-
-            if (Cursor.Position.X == 0)
-                return ScreenEdges.LEFT;
-            if (Cursor.Position.X == width)
-                return ScreenEdges.RIGHT;
-            if (Cursor.Position.Y == 0)
-                return ScreenEdges.UP;
-            if (Cursor.Position.Y == height)
-                return ScreenEdges.DOWN;
-            return ScreenEdges.NONE;
-        }
-
-        public void Hide()
-        {
-            ShowCursor(false);
-        }
-
-        public void Show()
-        {
-            ShowCursor(true);
-        }
-
-        void pressLeftMouse()
-        {
-
-            //    mouse_event(MouseFlags.Absolute | MouseFlags.Move, x, y, 0, UIntPtr.Zero);
-            mouse_event(MouseEventFlags.LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
-            mouse_event(MouseEventFlags.LEFTUP, 0, 0, 0, UIntPtr.Zero);
-        }
-
-        [DllImport("User32.dll")]
-        static extern void mouse_event(MouseEventFlags dwFlags, int dx, int dy, int dwData, UIntPtr dwExtraInfo);
-
-        [DllImport("User32.dll")]
-        static extern int ShowCursor(bool bShow);
-
-        
-
-        public void Clip()
-        {
-            var RectClipCoords = new Point()
-            {
-                X = -1920,
-                Y = -1080
-            };
-            var rect = Cursor.Clip;
-            Cursor.Position = new Point(Cursor.Position.X - 50, Cursor.Position.Y - 50);
-            rect = new Rectangle(RectClipCoords, Screen.PrimaryScreen.Bounds.Size);
-            Cursor.Clip = rect;
-            Cursor.Hide();
-
-            //int a;
-            //re _clip;
-            //HWND _window;
-
-            ////Get the window's handle
-            //_window = FindWindow(NULL, title);
-
-            ////Create a RECT out of the window
-            //GetWindowRect(_window, &_clip);
-
-            ////Modify the rect slightly, so the frame doesn't get clipped with
-            //_clip.left += 5;
-            //_clip.top += 30;
-            //_clip.right -= 5;
-            //_clip.bottom -= 5;
-
-            ////Clip the RECT
-            //ClipCursor(&_clip);
-            //ShowCursor?(false);
-
-        }
-
-        /* Makes the whole screen accessable again by using ClipCursor
-         * on the complete screensize
-         */
-        public void Unclip()
-        {
-            Cursor.Clip = Rectangle.Empty;
-            //Cursor.Clip.X -= 1920;
-            //Cursor.Clip.Y -= 1080;
-            //int a;
-
-            //RECT _screen;
-
-            ////Build a RECT with the size of the complete window (Note: GetSystemMetrics only covers the main monitor, this won't work in a multi-monitor setup)
-            //_screen.left = 0;
-            //_screen.top = 0;
-            //_screen.right = GetSystemMetrics(SM_CXSCREEN);
-            //_screen.bottom = GetSystemMetrics(SM_CYSCREEN);
-
-            ////Unclip everything by using ClipCursor on the complete screen
-            //ClipCursor(&_screen);
-            //ShowCursor ? (TRUE);
-
-        }
-
     }
 }

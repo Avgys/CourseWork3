@@ -82,11 +82,22 @@ namespace CourseWork
 
         private void ChangeWindowToMask(ScreenEdges flag)
         {
-            Dispatcher.Invoke(() =>
+            if (flag != ScreenEdges.NONE)
             {
-                HideOtherWindows(null,null);
-                _WindowMask.Show();
-            });
+                Dispatcher.Invoke(() =>
+                {
+                    HideOtherWindows(null, null);
+                    _WindowMask.Show();
+                });
+            }
+            else
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    _WindowMask.Hide();
+                    HideOtherWindows(null, null);                    
+                });
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

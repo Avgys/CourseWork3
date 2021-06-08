@@ -86,13 +86,16 @@ namespace CourseWork.Parts
             _MainListener = new TcpConnection();
             _MainListener.Listen(new IPEndPoint(localIP, _options.defualtTcpPort));
 
-            acceptingClients = new Thread(new ThreadStart(AcceptingClients));
-            acceptingClients.Name = "Waiting TcpConnect";
-            acceptingClients.Start();
 
             tryToConnect = new Thread(new ThreadStart(CheckConnectToServers));
             tryToConnect.Name = "CheckConnectToServers";
             tryToConnect.Start();
+
+            acceptingClients = new Thread(new ThreadStart(AcceptingClients));
+            acceptingClients.Name = "Waiting TcpConnect";
+            acceptingClients.Start();
+
+            
 
             readMessages = new Thread(new ThreadStart(ReadMessagesMainStream));
             readMessages.Name = "readMessages";
