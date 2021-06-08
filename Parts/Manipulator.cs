@@ -36,7 +36,7 @@ namespace CourseWork.Parts
         public static object remoteClientsAddressInUseLock = new object();
         int _PCid;
         public Options _options;
-        SoundTransfer _sound;
+        public SoundTransfer _sound;
         //FileTransfer _fileTransfer;
         public EventController _eventControler;
 
@@ -76,8 +76,7 @@ namespace CourseWork.Parts
             SubnetMask = GetSubnetMask();
             _PCid = localIP.GetAddressBytes()[3];
             ConnectedRemoteClientsAddress = new List<ConnectionInfo>();
-            //_Clients = new List<TcpClientInfo>();
-            //_Clients[0].tcpInfo.
+            
             LoadSettings();
             //Setting on Accepting external connections
 
@@ -86,16 +85,13 @@ namespace CourseWork.Parts
             _MainListener = new TcpConnection();
             _MainListener.Listen(new IPEndPoint(localIP, _options.defualtTcpPort));
 
-
             tryToConnect = new Thread(new ThreadStart(CheckConnectToServers));
             tryToConnect.Name = "CheckConnectToServers";
             tryToConnect.Start();
 
             acceptingClients = new Thread(new ThreadStart(AcceptingClients));
             acceptingClients.Name = "Waiting TcpConnect";
-            acceptingClients.Start();
-
-            
+            acceptingClients.Start();            
 
             readMessages = new Thread(new ThreadStart(ReadMessagesMainStream));
             readMessages.Name = "readMessages";
@@ -105,13 +101,8 @@ namespace CourseWork.Parts
             sendMessages.Name = "sendMessages";
             sendMessages.Start();
 
-            //_fileTransfer = new FileTransfer();
             _eventControler = new EventController();
             _eventControler._changeScreen += ChangeScreen;
-
-            //firstCheck = new Thread(new ThreadStart(CheckSubNet));
-            //firstCheck.Name = "sendMessages";
-            //firstCheck.Start();
         }
 
         public void RemoveRemoteTcp(IPEndPoint e)
@@ -120,77 +111,14 @@ namespace CourseWork.Parts
             {
                 var list = ConnectedRemoteClientsAddress.ToList();
                 ConnectedRemoteClientsAddress.RemoveAll(x => e == x.RemoteClient.IPEndPoint);
-                foreach (var n in list)
-                {
-                    n.RemoteClient.Close();
-                }
-
+                //foreach (var n in list)
+                //{
+                //    n.RemoteClient.Close();
+                //}
             }
             CheckSoundClients();
-        }
+        }        
 
-        private void CheckSubNet()
-        {
-
-            Ping pingSender = new Ping();
-            PingOptions options = new PingOptions();
-
-            options.DontFragment = true;
-
-            byte[] maskBytes = new byte[4];
-            for (int i = 0; i < 4; i++)
-            {
-                maskBytes[i] = (byte)(localIP.GetAddressBytes()[i] & SubnetMask.GetAddressBytes()[i]);
-            }
-            maskBytes[3]++;
-
-            byte[] buffer = new byte[1024];
-            int timeout = 1;
-
-            for (int i = 0; i < 255 && _options._isTryingConnect; i++)
-            {
-                maskBytes[3]++;
-                IPAddress ip = new IPAddress(maskBytes);
-
-                PingReply reply = pingSender.Send(ip, timeout, buffer, options);
-                if (reply.Status == IPStatus.Success)
-                {
-                    if (ip.ToString() != localIP.ToString())
-                    {
-                        IPEndPoint iPEnd = new IPEndPoint(ip, _options.defualtTcpPort);
-                        //if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
-                        if (ConnectedRemoteClientsAddress.Find(x => x.RemoteClient.IPEndPoint == iPEnd) == null)
-                        {
-                            TcpConnection temp = new TcpConnection();
-                            NetworkStream buff = null;
-                            buff = temp.ConnectAsync(iPEnd);
-                            if (buff != null)
-                            {
-                                lock (ConnectedRemoteLock)
-                                {
-                                    ConnectedRemoteClientsAddress.Add(new ConnectionInfo(temp));
-                                    //_Clients.Add(
-                                    //    new TcpClientInfo
-                                    //    {
-                                    //        Stream = buff,
-                                    //        tcpInfo = temp
-                                    //    }
-                                    //    );
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            //MessageBox.Show("Ended");
-        }
-
-        ~Manipulator()
-        {
-
-        }
 
         public void Close()
         {
@@ -239,7 +167,6 @@ namespace CourseWork.Parts
             MainTCP = 0x4,
             SoundConnection = 0x8,
             EventConnection = 0x10,
-            FileTranferConnection = 0x20,
             GET = 0x40
         }
 
@@ -263,12 +190,7 @@ namespace CourseWork.Parts
                         {
                             endPoint = _eventControler.ConnectionToReceive.IPEndPoint.ToString();
                             break;
-                        }
-                    case Commands.FileTranferConnection:
-                        {
-                            //string endPoint = FileTranferConnection._ConnectionToReceive.IPEndPoint.ToString();                            
-                            break;
-                        }
+                        }                    
                 }
 
 
@@ -298,9 +220,6 @@ namespace CourseWork.Parts
                 RemoveRemoteTcp(client.RemoteClient.IPEndPoint);
                 return false;
             }
-            buff.Clear();
-            //client.Stream.Read(buff, 0, buff.Length);
-
         }
 
         private void ProcessCommand(byte[] buff, ConnectionInfo client, int bytesRead)
@@ -319,8 +238,7 @@ namespace CourseWork.Parts
                         {
                             int headerLength = buff[0];
                             byte[] IpBuff = new byte[headerLength - 2];
-                            Array.Copy(buff, 2, IpBuff, 0, headerLength - 2);
-                            //buff.CopyTo(IpBuff, 2,);
+                            Array.Copy(buff, 2, IpBuff, 0, headerLength - 2);                            
                             IPEndPoint iPEnd;
                             if (IPEndPoint.TryParse(Encoding.UTF8.GetString(IpBuff), out iPEnd))
                             {
@@ -363,10 +281,6 @@ namespace CourseWork.Parts
                         }
                         break;
                     }
-                case Commands.FileTranferConnection:
-                    {
-                        break;
-                    }
             }
         }
 
@@ -392,12 +306,8 @@ namespace CourseWork.Parts
                     }
                     catch
                     {
-                        //client.Stream.Close();
                         client.RemoteClient.Close();
                     }
-                    //string temp = Encoding.Default.GetString(buff);
-                    //if (temp != "")
-                    //    MessageBox.Show(temp);
                 }
                 Thread.Sleep(100);
             }
@@ -414,7 +324,6 @@ namespace CourseWork.Parts
                 {
                     if (client.RemoteClient.isClientConnected)
                     {
-                        //string str = "message";
                         if (client.Sound == null)
                         {
                             Commands command = Commands.GET | Commands.SoundConnection;
@@ -434,58 +343,14 @@ namespace CourseWork.Parts
                                 client.RemoteClient.Close();
                             }
                         }
-
-                        //if (client.File == null)
-                        //{
-                        //    Commands command = Commands.GET | Commands.EventConnection;
-
-                        //    if (!SendCommand(command, client))
-                        //    {
-                        //        client.RemoteClient.Close();
-                        //    }
-                        //}
-
-
                     }
-
-                    //byte[] buff = new byte[2048];
-                    //Array.Clear(buff, 0, buff.Length);                    
-
-                    //SendCommand(command, client);
-
-                    //buff.Append<byte>((byte)command);
-                    //bytesLength++;
-                    //string endPoint = _sound._ConnectionToReceive.IPEndPoint.ToString();
-                    //bytesLength += Encoding.UTF8.GetBytes(endPoint).Length;
-                    //buff.SetValue(Encoding.UTF8.GetBytes(endPoint), 1);
-
-                    //foreach (var byteBuff in address.Address.GetAddressBytes())
-                    //{
-                    //    buff.Append<byte>(byteBuff);
-                    //    bytesLength++;
-                    //}
-
-                    //buff.Append<byte>(address.Port);
-
-                    //client.Stream.Write(buff, 0, bytesLength);
-                    //Array.Clear(buff, 0, buff.Length);
-                    //client.Stream.Read(buff, 0, buff.Length);
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(200);
             }
         }
 
         public IPAddress GetSubnetMask()
         {
-            //var adapters = NetworkInterface.GetAllNetworkInterfaces();
-            //foreach (NetworkInterface adapter in adapters)
-            //{
-            //    Console.WriteLine(adapter.Description + " :");
-            //    var properties = adapter.GetIPProperties();
-            //    foreach (var dns in properties.GetIPv4Properties    )
-            //        Console.WriteLine(dns.ToString());
-            //}
-
             IPAddress[] addresses;
             addresses = Dns.GetHostAddresses(Dns.GetHostName()).Where(ha => ha.AddressFamily == AddressFamily.InterNetwork).ToArray();
             localIP = addresses[0];
@@ -523,11 +388,6 @@ namespace CourseWork.Parts
                     {
                         TcpConnection tcpConnection = new TcpConnection(temp);
 
-                        //_Clients.Add(new TcpClientInfo
-                        //{
-                        //    Stream = temp.GetStream(),
-                        //    tcpInfo = tcpConnection
-                        //});
                         lock (ConnectedRemoteLock)
                         {
                             _options.AddClient(temp.Client.RemoteEndPoint as IPEndPoint);
@@ -552,7 +412,6 @@ namespace CourseWork.Parts
 
         public void CheckConnectToServers()
         {
-
             Ping pingSender = new Ping();
             PingOptions options = new PingOptions();
 
@@ -590,42 +449,10 @@ namespace CourseWork.Parts
                                         ConnectedRemoteClientsAddress.Add(new(temp));
                                         _options.AddClient(temp.IPEndPoint);
                                     }
-                                    //_Clients.Add(
-                                    //    new TcpClientInfo
-                                    //    {
-                                    //        Stream = buff,
-                                    //        tcpInfo = temp
-                                    //    }
-                                    //    );
                                 }
                             }
-                            //if (!ConnectedRemoteClientsAddress.Contains(iPEnd))
-                            //{
-                            //    TcpConnection temp = new TcpConnection();
-                            //    NetworkStream buff = temp.ConnectAsync(iPEnd);
-                            //    if (buff != null)
-                            //    {
-                            //        ConnectedRemoteClientsAddress.Add(iPEnd);
-                            //        _Clients.Add(
-                            //            new TcpClientInfo
-                            //            {
-                            //                Stream = buff,
-                            //                tcpInfo = temp
-                            //            }
-                            //            );
-                            //    }
-                            //}
                         }
                     }
-
-
-
-
-                if (firstTime)
-                {
-                    //CheckSubNet();
-                    firstTime = false;
-                }
                 Thread.Sleep(500); // choose a number (in milliseconds) that makes sense                
             }
             while (_options._isTryingConnect);
@@ -665,7 +492,6 @@ namespace CourseWork.Parts
                 _options = new Options();
             }
             _options.CheckSettings();
-            //_options = new Options();
 
         }
 
@@ -695,20 +521,26 @@ namespace CourseWork.Parts
             {
                 case ScreenEdges.LEFT:
                     {
-                        if (ConnectedRemoteClientsAddress.Count != 0)
+                        if (ConnectedRemoteClientsAddress.Count > 0)
                             _eventControler.currRemoteIP = ConnectedRemoteClientsAddress[0]?.Event ?? null;
                         break;
                     }
                 case ScreenEdges.UP:
                     {
+                        if (ConnectedRemoteClientsAddress.Count > 1)
+                            _eventControler.currRemoteIP = ConnectedRemoteClientsAddress[1]?.Event ?? null;
                         break;
                     }
                 case ScreenEdges.RIGHT:
                     {
+                        if (ConnectedRemoteClientsAddress.Count > 2)
+                            _eventControler.currRemoteIP = ConnectedRemoteClientsAddress[2]?.Event ?? null;
                         break;
                     }
                 case ScreenEdges.DOWN:
                     {
+                        if (ConnectedRemoteClientsAddress.Count > 3)
+                            _eventControler.currRemoteIP = ConnectedRemoteClientsAddress[3]?.Event ?? null;
                         break;
                     }
             }

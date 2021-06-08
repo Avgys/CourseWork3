@@ -6,7 +6,7 @@
         xmlns:tb="http://www.hardcodet.net/taskbar"
         xmlns:local="clr-namespace:CourseWork"
         mc:Ignorable="d"
-        Title="MainWindow" Height="387" Width="794" IsVisibleChanged="Window_IsVisibleChanged" Background="#FF323232" Activated="Window_Activated" Closing="Window_Closing">
+        Title="MainWindow" Height="372" Width="821" IsVisibleChanged="Window_IsVisibleChanged" Background="#FF323232" Activated="Window_Activated" Closing="Window_Closing">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -14,10 +14,16 @@
             <RowDefinition Height="33.004"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="118"/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="203"/>
+            <ColumnDefinition Width="104"/>
+            <ColumnDefinition Width="117*"/>
+            <ColumnDefinition Width="140*"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="Settings" Content="Settings" HorizontalAlignment="Center" VerticalAlignment="Center" Click="Button_Click" Height="21" Width="74" Background="#FF515151" Foreground="White" Grid.Row="1"/>
-          
+        <Button x:Name="Settings" Content="Settings" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Button_Click" Height="21" Width="74" Background="#FF515151" Foreground="White" Grid.Row="1" Margin="23,0,0,0"/>
+        <Label x:Name="LeftClient" HorizontalAlignment="Left" Margin="23,128,0,0" VerticalAlignment="Top" Height="34" Width="180" Foreground="White" Content="Client left"/>
+        <Label x:Name="UpClient" Content="Client up" HorizontalAlignment="Left" Margin="0,89,0,0" VerticalAlignment="Top" Height="34" Width="190" Foreground="White" Grid.Column="2"/>
+        <Label x:Name="RightClient" Content="Clietn right" HorizontalAlignment="Left" Margin="0,127,0,0" VerticalAlignment="Top" Height="34" Width="196" Foreground="White" Grid.Column="3"/>
+        <Label x:Name="DownClient" Content="Client down" HorizontalAlignment="Left" Margin="0,170,0,0" VerticalAlignment="Top" Height="34" Width="190" Foreground="White" Grid.Column="2"/>
+
     </Grid>
 </Window>

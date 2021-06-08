@@ -34,6 +34,7 @@ namespace CourseWork.Parts
         Thread keyboardHook;
         Thread mouseHook;
         Thread GetRemoteKeys;
+        Thread checkInputs;
 
         private const int KEYEVENTF_EXTENDEDKEY = 1;
         private const int KEYEVENTF_KEYUP = 2;
@@ -42,41 +43,35 @@ namespace CourseWork.Parts
         {
             _isRemoteCheckingInput = true;
 
-            //_mouseControl = new MouseControl();
-
             KeyLocalSocket = new UdpConnection();
             ConnectionToReceive = new UdpConnection();
             KeyboardControl._Owner = this;
 
             MouseControl._Owner = this;
 
-            keyboardHook = new Thread(new ThreadStart(KeyboardControl.Start));
-            keyboardHook.Name = "keyboardHook";
-            keyboardHook.Start();
-
-            mouseHook = new Thread(new ThreadStart(MouseControl.Start));
-            mouseHook.Name = "mouseHook";
-            mouseHook.Start();
+            
 
             GetRemoteKeys = new Thread(new ThreadStart(getRemoteInput));
             GetRemoteKeys.Name = "GetRemoteKeys";
             GetRemoteKeys.Start();
 
-            Thread checkInputs = new Thread(new ThreadStart(CheckInputs));
+            checkInputs = new Thread(new ThreadStart(CheckInputs));
             checkInputs.Start();
-            //Clip();
         }
 
         public void Close()
         {
-            //keyboardEmulate.Join();
             ConnectionToReceive.Close();
             KeyLocalSocket.Close();
             _isRemoteCheckingInput = false;
             _isLocalCheckingInput = false;
             KeyboardControl.Stop();
+            MouseControl.Stop();
             GetRemoteKeys.Join();
-            keyboardHook.Join();
+            if (keyboardHook.IsAlive)
+                keyboardHook.Join();
+            if (mouseHook.IsAlive)
+                mouseHook.Join();
             isSendingKey = false;
         }
 
@@ -93,7 +88,7 @@ namespace CourseWork.Parts
             while (_isRemoteCheckingInput)
             {
                 IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                byte[] buff = ConnectionToReceive.Receive(ref iPEndPoint);
+                byte[] buff = ConnectionToReceive.ReceiveDirect(ref iPEndPoint);
                 if (buff != null && buff.Length > 0)
                 {
                     List<byte> n = new List<byte>(buff);
@@ -136,8 +131,7 @@ namespace CourseWork.Parts
 
         public void SendKeyboardEvent(Keys Key, KeyStates State)
         {
-
-            if (isSendingKey)
+            if (isSendingKey && _isScreenChanged)
             {
                 if (Key != Keys.None)
                 {
@@ -146,7 +140,6 @@ namespace CourseWork.Parts
                         _changeScreen.Invoke(ScreenEdges.NONE);
                         _isScreenChanged = false;
                         ShowCursor(true);
-                        Unclip();
                     }
                     if (currRemoteIP != null)
                     {
@@ -172,14 +165,12 @@ namespace CourseWork.Parts
         private void CallMouseEvent(MouseEventFlags msg, MSLLHOOKSTRUCT msStruct)
         {
             Cursor.Position = new Point(msStruct.X, msStruct.Y);
-            MouseControl.mouse_event(msg, 0, 0, msStruct.mouseData/50000, msStruct.dwExtraInfo);
+            MouseControl.mouse_event(msg, 0, 0, msStruct.mouseData / 50000, msStruct.dwExtraInfo);
         }
-
-
 
         public void SendMouseEvent(MouseMessages msg, MSLLHOOKSTRUCT msStruct)
         {
-            if (isSendingKey)
+            if (isSendingKey && _isScreenChanged)
             {
                 MouseEventFlags send = 0;
                 switch (msg)
@@ -228,84 +219,10 @@ namespace CourseWork.Parts
             return ScreenEdges.NONE;
         }
 
-        //public void Hide()
-        //{
-        //    ShowCursor(false);
-        //}
-
-        //public void Show()
-        //{
-        //    ShowCursor(true);
-        //}
-
-        //void pressLeftMouse()
-        //{
-
-        //    //    mouse_event(MouseFlags.Absolute | MouseFlags.Move, x, y, 0, UIntPtr.Zero);
-        //    mouse_event(MouseEventFlags.LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
-        //    mouse_event(MouseEventFlags.LEFTUP, 0, 0, 0, UIntPtr.Zero);
-        //}
-
-
-
         [DllImport("User32.dll")]
         static extern int ShowCursor(bool bShow);
 
-        public void Clip()
-        {
-
-            var rect = Cursor.Clip;
-
-            //Cursor.Position = new Point(Cursor.Position.X, Cursor.Position.Y - 50);
-            rect = new Rectangle(Cursor.Position, Screen.PrimaryScreen.Bounds.Size);
-            //Cursor.Clip = rect;
-            //Cursor.Hide();
-
-            //int a;
-            //re _clip;
-            //HWND _window;
-
-            ////Get the window's handle
-            //_window = FindWindow(NULL, title);
-
-            ////Create a RECT out of the window
-            //GetWindowRect(_window, &_clip);
-
-            ////Modify the rect slightly, so the frame doesn't get clipped with
-            //_clip.left += 5;
-            //_clip.top += 30;
-            //_clip.right -= 5;
-            //_clip.bottom -= 5;
-
-            ////Clip the RECT
-            //ClipCursor(&_clip);
-            //ShowCursor?(false);
-
-        }
-
-        /* Makes the whole screen accessable again by using ClipCursor
-         * on the complete screensize
-         */
-        public void Unclip()
-        {
-            Cursor.Clip = Rectangle.Empty;
-            //Cursor.Clip.X -= 1920;
-            //Cursor.Clip.Y -= 1080;
-            //int a;
-
-            //RECT _screen;
-
-            ////Build a RECT with the size of the complete window (Note: GetSystemMetrics only covers the main monitor, this won't work in a multi-monitor setup)
-            //_screen.left = 0;
-            //_screen.top = 0;
-            //_screen.right = GetSystemMetrics(SM_CXSCREEN);
-            //_screen.bottom = GetSystemMetrics(SM_CYSCREEN);
-
-            ////Unclip everything by using ClipCursor on the complete screen
-            //ClipCursor(&_screen);
-            //ShowCursor ? (TRUE);
-
-        }
+        bool isHooksActive = false;
 
         public void CheckInputs()
         {
@@ -314,13 +231,37 @@ namespace CourseWork.Parts
             {
                 Thread.Sleep(100);
                 flag = isMouseTouchScreenEdge();
-                if (flag != ScreenEdges.NONE)
+                if (flag != ScreenEdges.NONE && !_isScreenChanged)
                 {
+                    keyboardHook = new Thread(new ThreadStart(KeyboardControl.Start));
+                    keyboardHook.Name = "keyboardHook";
+                    mouseHook = new Thread(new ThreadStart(MouseControl.Start));
+                    mouseHook.Name = "mouseHook";
+                    keyboardHook.Start();
+                    mouseHook.Start();                    
+                    isHooksActive = true;
                     _isScreenChanged = true;
+                    Size size = Screen.PrimaryScreen.Bounds.Size;
+                    Cursor.Position = new Point(Math.Abs(Cursor.Position.X - size.Width), Math.Abs(Cursor.Position.Y - size.Height));
                     ShowCursor(false);
-                    //Clip();
                     _changeScreen?.Invoke(flag);
                 }
+
+                if (!_isScreenChanged)
+                {
+                    if (keyboardHook !=null && keyboardHook.IsAlive)
+                    {
+                        KeyboardControl.Stop();
+                        keyboardHook.Join();
+                    }
+
+                    if (mouseHook != null && mouseHook.IsAlive)
+                    {
+                        MouseControl.Stop();
+                        mouseHook.Join();
+                    }
+                }
+
             }
         }
     }

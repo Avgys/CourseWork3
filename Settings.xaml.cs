@@ -85,36 +85,13 @@ namespace CourseWork
             Manipulator._currManipulator.LoadSettings();
         }
 
-        private void Ok_Click(object sender, RoutedEventArgs e)
-        {
-            Manipulator._currManipulator.SaveSettings();
-        }
-
         private void SaveSettings_Click(object sender, RoutedEventArgs e)
         {
             Manipulator._currManipulator.SaveSettings();
         }
 
-        private void ClientsAddresses_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-
-        }
-
-        //public void ReadSelectedItem()
-        //{
-        //    IPEndPoint temp;
-        //    if (IPEndPoint.TryParse(ClientsAddresses.SelectedItem.ToString(), out temp))
-        //    {
-        //        IpAddress.Text = temp.Address.ToString();
-        //        Port.Text = temp.Port.ToString();
-        //    }
-        //}
-
         private void ClientsAddresses_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //IPEndPoint temp;
-            //e.AddedItems;
-
             if (e.AddedItems.Count >= 1)
             {
                 IpAddress.Text = Manipulator._currManipulator._options.remoteClientsAddress[ClientsAddresses.SelectedIndex].Address.ToString();
@@ -135,16 +112,6 @@ namespace CourseWork
             {
 
                 var options = Manipulator._currManipulator._options;
-
-                RecordDevice.Items.Clear();
-                for (int i = 0; i < options._SoundDevices.Count; i++)
-                {
-                    RecordDevice.Items.Add(options._SoundDevices[i].FriendlyName);
-                    if (options._SoundDevices[i].ID == options.defaultInputSound)
-                    {
-                        RecordDevice.SelectedItem = options._SoundDevices[i].FriendlyName;
-                    }
-                }
 
                 PlayDevice.Items.Clear();
                 for (int i = 0; i < options._SoundDevices.Count; i++)
@@ -170,15 +137,11 @@ namespace CourseWork
             SoundGrid.Visibility = Visibility.Visible;
         }
 
-        private void SetRecordDevice_Click(object sender, RoutedEventArgs e)
-        {
-            Manipulator._currManipulator._options.SetDefaultInputSound(RecordDevice.SelectedItem.ToString());
-
-        }
-
         private void SetPlayDevice_Click(object sender, RoutedEventArgs e)
         {
             Manipulator._currManipulator._options.SetDefaultoutputSound(PlayDevice.SelectedItem.ToString());
+            Manipulator._currManipulator._sound.Deactivate(NAudio.CoreAudioApi.DataFlow.Render);
+            Manipulator._currManipulator._sound.Activate(NAudio.CoreAudioApi.DataFlow.Render);
         }
 
 
@@ -224,21 +187,26 @@ namespace CourseWork
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             Manipulator._currManipulator._options.isReceivingSound = true;
+            Manipulator._currManipulator._sound.Activate(NAudio.CoreAudioApi.DataFlow.Render);
+
         }
 
         private void ReceiveSound_Unchecked(object sender, RoutedEventArgs e)
         {
             Manipulator._currManipulator._options.isReceivingSound = false;
+            Manipulator._currManipulator._sound.Deactivate(NAudio.CoreAudioApi.DataFlow.Render);
         }
 
         private void SendSound_Unchecked(object sender, RoutedEventArgs e)
         {
             Manipulator._currManipulator._options.isSendingSound = false;
+            Manipulator._currManipulator._sound.Deactivate(NAudio.CoreAudioApi.DataFlow.Capture);
         }
 
         private void SendSound_Checked(object sender, RoutedEventArgs e)
         {
             Manipulator._currManipulator._options.isSendingSound = true;
+            Manipulator._currManipulator._sound.Activate(NAudio.CoreAudioApi.DataFlow.Capture);
         }
     }
 }

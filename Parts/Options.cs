@@ -22,10 +22,6 @@ namespace CourseWork.Parts
 
     public class Options
     {
-
-        //IPEndPoint defaultUdp { get; set; }
-        //IPEndPoint defaultTcp { get; set; }
-
         public string defaultInputSound { get; set; }
         public string defaultOutputSound { get; set; }
 
@@ -78,28 +74,15 @@ namespace CourseWork.Parts
             }
         }
 
-
-        //public struct clientInfo
-        //{
-        //    public string ip;
-        //    public int port;
-        //}
-
         public Options()
         {
             isReceivingSound = false;
             isSendingSound = false;
-            //isReceivingSound = true;
-            //isSendingSound = true;
             _isAcceptable = true;
             _isTryingConnect = true;
             serializableClients = new List<string>();
             remoteClientsAddress = new List<IPEndPoint>();
             SetSoundParams();
-            //if (!isContainsClient("127.0.0.1", "8888"))
-            //{
-            //    AddClient("127.0.0.1", "8888");
-            //}
         }
 
         ~Options()
@@ -225,8 +208,7 @@ namespace CourseWork.Parts
                 if (remoteClientsAddress.Contains(iPEndPoint))
                 {                    
                     {
-                        Manipulator._currManipulator.RemoveRemoteTcp(iPEndPoint);
-                        
+                        Manipulator._currManipulator.RemoveRemoteTcp(iPEndPoint);                        
                         remoteClientsAddress.Remove(iPEndPoint);
                         serializableClients.Remove(iPEndPoint.ToString());
                     }

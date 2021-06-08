@@ -174,13 +174,6 @@ namespace CourseWork.Parts
         WM_RBUTTONUP = 0x0205
     }
 
-    //[StructLayout(LayoutKind.Sequential)]
-    //public struct POINT
-    //{
-    //    public int X;
-    //    public int Y;
-    //}
-
     [StructLayout(LayoutKind.Sequential)]
     public struct MSLLHOOKSTRUCT
     {
@@ -201,9 +194,6 @@ namespace CourseWork.Parts
         private static IntPtr _hookID = IntPtr.Zero;
         private static MSLLHOOKSTRUCT _InputMouse;
         private const int WH_MOUSE_LL = 14;
-
-        //[System.Runtime.InteropServices.DllImport("user32.dll")]
-        //public static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
 
         [DllImport("User32.dll")]
         static public extern void mouse_event(MouseEventFlags dwFlags, int dx, int dy, int dwData, uint dwExtraInfo);

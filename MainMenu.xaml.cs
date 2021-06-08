@@ -40,22 +40,11 @@ namespace CourseWork
             Icon myIcon = new Icon("./cursor.ico");
             tbi.Icon = myIcon;
             tbi.ToolTipText = "RMouse";
-            //tbi.TrayToolTip.wid
 
             tbi.TrayMouseDoubleClick += iconTrayClick;
 
-            this.Activated += HideOtherWindows;
-            //mouse.Clip();
-            ////Thread.Sleep(10000);
-            //mouse.Unclip();
-            //NotifyIcon icon = new NotifyIcon();
-
-            //Dispatcher.Invoke(() =>
-            //{
-            //    this.Hide();
-            //    _WindowMask.Show();
-            //});
-
+            this.Activated += HideOtherWindows;            
+            
             this.Show();
             if (_SettingWindow.Owner == null)
                 _SettingWindow.Owner = this;
@@ -63,8 +52,7 @@ namespace CourseWork
                 _WindowMask.Owner = this;
             this.ShowInTaskbar = false;
             foreach (Window window in this.OwnedWindows)
-                window.ShowInTaskbar = false;
-            //Button_Click(this, null);
+                window.ShowInTaskbar = false;         
         }
         void HideOtherWindows(object sender, EventArgs e)
         {
@@ -77,7 +65,14 @@ namespace CourseWork
             this.WindowState = WindowState.Normal;
             this.Activate();
             this.Show();
+        }
 
+        private void ResetClients()
+        {
+            LeftClient.Content = "ClientLeft:" + (manipulator.ConnectedRemoteClientsAddress.Count > 0 ? manipulator.ConnectedRemoteClientsAddress[0].RemoteClient.IPEndPoint : " null");
+            UpClient.Content = "ClientUp:" +  (manipulator.ConnectedRemoteClientsAddress.Count > 1 ? manipulator.ConnectedRemoteClientsAddress[1].RemoteClient.IPEndPoint : " null");
+            RightClient.Content = "ClientRight:" + (manipulator.ConnectedRemoteClientsAddress.Count > 2 ? manipulator.ConnectedRemoteClientsAddress[2].RemoteClient.IPEndPoint : " null");
+            DownClient.Content = "ClientDown:" + (manipulator.ConnectedRemoteClientsAddress.Count > 3 ? manipulator.ConnectedRemoteClientsAddress[3].RemoteClient.IPEndPoint : " null");
         }
 
         private void ChangeWindowToMask(ScreenEdges flag)
@@ -118,7 +113,9 @@ namespace CourseWork
 
         private void Window_Activated(object sender, EventArgs e)
         {
-
+            HideOtherWindows(null,null);
+            this.Show();
+            ResetClients();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -127,12 +124,8 @@ namespace CourseWork
             foreach (Window window in this.OwnedWindows)
             {
                 if (window.IsEnabled)
-                    window.Close();
-               
+                    window.Close();               
             }
-            //System.Windows;
-            //return;
-            //System.Windows.MessageBox.Show("Closed");
             System.Windows.Application.Current.Shutdown();
         }
     }

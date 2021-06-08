@@ -44,17 +44,14 @@
             <Button x:Name="Remove" Content="Remove" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Click="Remove_Click" Background="#FF464646" Foreground="White" Height="21" Width="52" Margin="261,0,0,0"/>
             <ListBox x:Name="ConnectedAddress" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,2,0,0" Background="#FF494949" Foreground="White"/>
         </Grid>
-        <Button x:Name="Cancel" HorizontalAlignment="Left" Margin="1,19,0,0" VerticalAlignment="Top" Height="22" Width="77" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="Cancel" Click="Cancel_Click" Foreground="White" Grid.Column="3"/>
-        <Button x:Name="Ok" HorizontalAlignment="Center" Margin="0,19,0,0" VerticalAlignment="Top" Height="22" Width="76" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="OK" Click="Ok_Click" Foreground="White" Grid.Column="2"/>
-        <Button x:Name="SaveSettings" HorizontalAlignment="Left" Margin="313,19,0,0" VerticalAlignment="Top" Height="22" Width="77" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="Save settings" Click="SaveSettings_Click" Foreground="White" Grid.Column="1"/>
+        <Button x:Name="Cancel" HorizontalAlignment="Left" Margin="1,19,0,0" VerticalAlignment="Top" Height="22" Width="82" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="Load settings" Click="Cancel_Click" Foreground="White" Grid.Column="3"/>
+        <Button x:Name="SaveSettings" HorizontalAlignment="Center" Margin="0,19,0,0" VerticalAlignment="Top" Height="22" Width="77" Background="#FF636363" BorderBrush="#FFE4E4E4" Grid.Row="1" Content="Save settings" Click="SaveSettings_Click" Foreground="White" Grid.Column="2"/>
         <Grid x:Name="SoundGrid" Grid.Column="1" Grid.ColumnSpan="3">
-            <ComboBox x:Name="RecordDevice" HorizontalAlignment="Left" Margin="29,40,0,0" VerticalAlignment="Top" Width="194" Height="26"/>
             <ComboBox x:Name="PlayDevice" HorizontalAlignment="Left" Margin="29,99,0,0" VerticalAlignment="Top" Width="194" Height="23"/>
-            <Button x:Name="SetRecordDevice" Content="Set" HorizontalAlignment="Left" Margin="252,40,0,0" VerticalAlignment="Top" Height="26" Width="69" Click="SetRecordDevice_Click" Foreground="White" Background="#FF464646"/>
             <Button x:Name="SetPlayDevice" Content="Set" HorizontalAlignment="Left" Margin="252,99,0,0" VerticalAlignment="Top" Height="26" Width="69" Click="SetPlayDevice_Click" Foreground="White" Background="#FF464646"/>
-            <CheckBox x:Name="ReceiveSound" Content="ReceiveSound" HorizontalAlignment="Left" Margin="29,144,0,0" VerticalAlignment="Top" Checked="CheckBox_Checked" Unchecked="ReceiveSound_Unchecked"/>
-            <CheckBox Content="CheckBox" HorizontalAlignment="Left" Margin="29,176,0,0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="SendSound" Content="SendSound" HorizontalAlignment="Left" Margin="126,144,0,0" VerticalAlignment="Top" Unchecked="SendSound_Unchecked" Checked="SendSound_Checked"/>
+            <CheckBox x:Name="ReceiveSound" Content="ReceiveSound" HorizontalAlignment="Left" Margin="29,144,0,0" VerticalAlignment="Top" Checked="CheckBox_Checked" Unchecked="ReceiveSound_Unchecked" Foreground="White"/>
+            <CheckBox Content="CheckBox" HorizontalAlignment="Left" Margin="29,176,0,0" VerticalAlignment="Top" Foreground="White"/>
+            <CheckBox x:Name="SendSound" Content="SendSound" HorizontalAlignment="Left" Margin="126,144,0,0" VerticalAlignment="Top" Unchecked="SendSound_Unchecked" Checked="SendSound_Checked" Foreground="White"/>
         </Grid>
         <Grid x:Name="NetworkGrid" Grid.Column="1" Grid.ColumnSpan="3" d:IsHidden="True">
             <Label Content="Tcp Port" HorizontalAlignment="Left" Margin="52,31,0,0" VerticalAlignment="Top" Foreground="White"/>

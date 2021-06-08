@@ -45,17 +45,6 @@ namespace CourseWork
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-
-            //if (e.Key == Key.F9 && Keyboard.Modifiers == ModifierKeys.Shift)
-            //{
-            //    MessageBox.Show("Wake up");
-            //}
-
-            //if (e.Key == Key.Tab && Keyboard.Modifiers == ModifierKeys.Alt)
-            //{
-            //    MessageBox.Show("Wake up");
-            //}
-
         }
 
         private void Window_KeyUp(object sender, KeyEventArgs e)
@@ -65,12 +54,10 @@ namespace CourseWork
 
         private void Window_MouseMove(object sender, MouseEventArgs e)
         {
-
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-
         }
     }
 }
