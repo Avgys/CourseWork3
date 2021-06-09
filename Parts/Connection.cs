@@ -59,7 +59,7 @@ namespace CourseWork.Parts
         {
             client.Send(input, input.Length);
         }
-
+        
 
         public void Send(byte[] input, IPEndPoint address)
         {
@@ -73,7 +73,7 @@ namespace CourseWork.Parts
             {
                 //var timeToWait = TimeSpan.FromSeconds(1);
                 var asyncResult = client.BeginReceive(null, null);
-                asyncResult.AsyncWaitHandle.WaitOne(100);
+                asyncResult.AsyncWaitHandle.WaitOne(500);
 
                 if (asyncResult.IsCompleted)
                 {
