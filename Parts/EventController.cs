@@ -68,9 +68,9 @@ namespace CourseWork.Parts
             KeyboardControl.Stop();
             MouseControl.Stop();
             GetRemoteKeys.Join();
-            if (keyboardHook.IsAlive)
+            if (keyboardHook != null && keyboardHook.IsAlive)
                 keyboardHook.Join();
-            if (mouseHook.IsAlive)
+            if (mouseHook != null && mouseHook.IsAlive)
                 mouseHook.Join();
             isSendingKey = false;
         }
